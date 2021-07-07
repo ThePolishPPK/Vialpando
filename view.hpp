@@ -4,7 +4,7 @@
 #include <imgui.h>
 
 class View {
- public:
+   public:
 	virtual void draw() = 0;
 	ImGuiIO* IO;
 	bool keepActive;

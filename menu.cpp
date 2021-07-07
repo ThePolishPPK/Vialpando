@@ -9,8 +9,6 @@
 
 #include "Simulations/gravity.hpp"
 
-#define REFRESH_TIME 5
-
 Menu::Menu(ImGuiIO& io) {
 	this->IO = &io;
 	this->keepActive = true;
@@ -23,15 +21,15 @@ void Menu::draw() {
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowBgAlpha(1);
 	ImGui::Begin("Menu", NULL,
-							 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
-									 ImGuiWindowFlags_NoResize |
-									 ImGuiWindowFlags_NoSavedSettings |
-									 ImGuiWindowFlags_NoBringToFrontOnFocus);
+				 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+					 ImGuiWindowFlags_NoResize |
+					 ImGuiWindowFlags_NoSavedSettings |
+					 ImGuiWindowFlags_NoBringToFrontOnFocus);
 	ImGui::Text("Dostępne symulacje");
 	for (auto& view : this->views) {
 		if (ImGui::Button(Menu::translation[std::string(view->name)]) &&
-				find(activeSimulations.begin(), activeSimulations.end(), view) ==
-						activeSimulations.end()) {
+			find(activeSimulations.begin(), activeSimulations.end(), view) ==
+				activeSimulations.end()) {
 			this->activeSimulations.push_back(view);
 			view->keepActive = true;
 		}
@@ -40,13 +38,13 @@ void Menu::draw() {
 	for (auto& view : this->activeSimulations) {
 		if (view->keepActive == false) {
 			this->activeSimulations.erase(
-					find(activeSimulations.begin(), activeSimulations.end(), view));
+				find(activeSimulations.begin(), activeSimulations.end(), view));
 		} else
 			view->draw();
 	}
 }
 
-std::map<std::string, const char*> Menu::translation({{std::string("Gravity"),
-																											 "Siła grawitacji"}
+std::map<std::string, const char*> Menu::translation({
+	{std::string("Gravity"), "Siła grawitacji"},
 
 });
