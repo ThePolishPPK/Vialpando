@@ -6,9 +6,11 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
-#define GRAVITY_G 6.7e-11
+#define GRAVITY_G 6.67430e-11
 #define EARTH_MASS 5.97219e24
 #define EARTH_RADIUS 6371008
+
+// FIXME: If objects goes on center other, then is infinite accelerated out
 
 Gravity::Gravity() {
 	this->keepActive = false;
@@ -21,7 +23,9 @@ Gravity::Gravity() {
 	this->vectorThickness = 3.0;
 	this->arrowAngle = 50.0;
 	this->arrowLength = 8.0;
-	// this->forceColor = 0x00FF00;
+	this->forceColor = ImColor(0, 255, 251);
+	this->lastMoveTime = ImGui::GetTime();
+	this->timeSpeed = 1.0;
 	this->reset();
 }
 
@@ -34,6 +38,9 @@ void Gravity::draw() {
 		if (ImGui::BeginMenu("Opcje", true)) {
 			ImGui::DragFloat("Skala wielkości", &this->scale, 16, 0,
 							 std::pow(2, 18), "%.7f",
+							 ImGuiSliderFlags_Logarithmic);
+			ImGui::DragFloat("Szybkość czasu", &this->timeSpeed,
+							 std::pow(2, 14), 0, std::pow(2, 24), "%.2f",
 							 ImGuiSliderFlags_Logarithmic);
 			ImGui::DragFloat("Skala wektorów", &this->forceScale, 1, 0,
 							 std::pow(2, 10), "%.7f",
@@ -84,6 +91,7 @@ void Gravity::draw() {
 
 		list->AddCircleFilled(lastDrawing, radius, ImColor(255, 0, 0, 255));
 
+		// TODO: Repair drawing vectors under objects
 		if (this->drawForceVectors) {
 			for (auto& force : obj.forcesVector) {
 				this->drawArrow(
@@ -97,6 +105,22 @@ void Gravity::draw() {
 			}
 		}
 	}
+
+	if (ImGui::GetTime() - this->lastMoveTime < 1000.0) {
+		double part =
+			(ImGui::GetTime() - this->lastMoveTime) / (1000 / this->timeSpeed);
+		for (auto& obj : this->objects) {
+			for (auto& force : obj.forcesVector) {
+				double speed = force.power / obj.mass;
+				obj.move.speedX += speed * std::cos(force.angle) * part;
+				obj.move.speedY += speed * std::sin(force.angle) * part;
+			}
+			obj.position.x += obj.move.speedX * part;
+			obj.position.y += obj.move.speedY * part;
+		}
+	}
+	this->lastMoveTime = ImGui::GetTime();
+
 	for (auto& obj : this->objects) {
 		obj.forcesVector.clear();
 		for (auto& grav : this->objects) {
@@ -120,8 +144,10 @@ void Gravity::reset() {
 	object1.radius = EARTH_RADIUS;
 
 	object2.mass = 1;
-	object2.position = point(EARTH_RADIUS * 2, EARTH_RADIUS * 1.3);
+	object2.position = point(0, EARTH_RADIUS * 1.3);
 	object2.radius = EARTH_RADIUS * 0.2;
+	object2.move.speedX =  // Orbital Speed for object1
+		std::sqrt(GRAVITY_G * object1.mass / (EARTH_RADIUS * 1.3));
 
 	this->objects.push_back(object1);
 	this->objects.push_back(object2);
@@ -153,8 +179,6 @@ Gravity::Force Gravity::calcGravityForce(const Gravity::object& o1,
 	force.power = GRAVITY_G * o1.mass * o2.mass /
 				  (std::pow(o1.position.x - o2.position.x, 2) +
 				   std::pow(o1.position.y - o2.position.y, 2));
-	point p1(o1.position.x + o1.radius / 2, o1.position.y - o1.radius / 2);
-	point p2(o2.position.x + o2.radius / 2, o2.position.y - o2.radius / 2);
 	force.angle = angleBetweenPoints(o1.position, o2.position);
 	return force;
 }
@@ -185,17 +209,16 @@ float Gravity::angleBetweenPoints(const Gravity::point& from,
 
 void Gravity::drawArrow(const Gravity::point& start, const Gravity::point& end,
 						ImDrawList* drawList) {
-	// TODO: Color manage
 	float angle = this->angleBetweenPoints(end, start);
 	float angleDiff = this->arrowAngle / 180 * M_PI / 2;
 	drawList->AddLine(ImVec2(start.x, start.y), ImVec2(end.x, end.y),
-					  ImColor(200, 200, 0), this->vectorThickness);
+					  this->forceColor, this->vectorThickness);
 	ImVec2 arrow[] = {
 		ImVec2(end.x + this->arrowLength * std::cos(angle + angleDiff),
 			   end.y + this->arrowLength * std::sin(angle + angleDiff)),
 		ImVec2(end.x, end.y),
 		ImVec2(end.x + this->arrowLength * std::cos(angle - angleDiff),
 			   end.y + this->arrowLength * std::sin(angle - angleDiff))};
-	drawList->AddPolyline((ImVec2*)&arrow, 3, ImColor(200, 200, 0), false,
+	drawList->AddPolyline((ImVec2*)&arrow, 3, this->forceColor, false,
 						  this->vectorThickness);
 }

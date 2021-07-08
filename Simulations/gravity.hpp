@@ -22,10 +22,13 @@ class Gravity : public View {
 	ImColor forceColor;
 	bool drawForceVectors;
 	int viewX, viewY;
+	double lastMoveTime;
+	float timeSpeed;
 	void reset();
 	struct Force {
 		double power;  // In Newtons
 		float angle;   // In Radians, starting like unit circle
+		Force(double power = 0, float angle = 0) : power(power), angle(angle){};
 	};
 	struct point {
 		double x;
@@ -37,6 +40,10 @@ class Gravity : public View {
 		point position;
 		double radius;
 		double mass;
+		struct {
+			double speedX = 0;	// In m/s
+			double speedY = 0;	// In m/s
+		} move;
 		std::vector<Force> forcesVector;
 		Force resultantOfForces();
 		void simplify();
