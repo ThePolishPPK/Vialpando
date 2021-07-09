@@ -4,6 +4,7 @@
 #include <imgui.h>
 
 #include <vector>
+#include <limits>
 
 #include "../view.hpp"
 
@@ -24,6 +25,7 @@ class Gravity : public View {
 	int viewX, viewY;
 	double lastMoveTime;
 	float timeSpeed;
+	double massMin = 0.0001, massMax = std::numeric_limits<double>::max();
 	void reset();
 	struct Force {
 		double power;  // In Newtons
@@ -38,11 +40,11 @@ class Gravity : public View {
 	class object {
 	   public:
 		point position;
-		double radius;
+		float radius;
 		double mass;
 		struct {
-			double speedX = 0;	// In m/s
-			double speedY = 0;	// In m/s
+			float speedX = 0;	// In m/s
+			float speedY = 0;	// In m/s
 		} move;
 		std::vector<Force> forcesVector;
 		Force resultantOfForces();

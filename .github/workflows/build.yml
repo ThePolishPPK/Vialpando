@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  release:
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: debian-bullseye
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Update repository
+        run: apt update
+
+      - name: Install packages
+        run: |
+          apt install -y libimgui-dev
+          apt install -y liballegro5-dev
+          apt install -y libstb-dev
+          apt install -y cmake make
+
+      - name: Create MakeFile
+        run: cmake .
+
+      - name: Make
+        run: make

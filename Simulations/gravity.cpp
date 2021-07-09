@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include <stdio.h>
+#include <string>
 
 #include <cmath>
 #include <iostream>
@@ -16,7 +17,7 @@ Gravity::Gravity() {
 	this->keepActive = false;
 	this->name = "Gravity";
 	this->scale = 65536.0;
-	this->forceScale = 0.03;
+	this->forceScale = 0.11;
 	this->viewX = 300;
 	this->viewY = 300;
 	this->drawForceVectors = true;
@@ -53,6 +54,23 @@ void Gravity::draw() {
 							 128, "%.2f");
 			ImGui::ColorEdit3("Kolor wektorów", (float*)&this->forceColor);
 			ImGui::Checkbox("Wektory sił", &this->drawForceVectors);
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Obiekty", true)) {
+			unsigned char number = 1;
+			for (auto& object : this->objects) {
+				std::string name(std::string("Obiekt ")+std::to_string(number));
+				if (ImGui::BeginMenu(name.c_str())) {
+					// TODO: Improve sliders
+					ImGui::DragScalar("Masa", ImGuiDataType_Double, &object.mass, 0.0000005f, &this->massMin, &this->massMax, "%e kg", ImGuiSliderFlags_Logarithmic);
+					ImGui::DragFloat("Promień", &object.radius, 0.000001f, 0.001f, std::numeric_limits<float>::max(), "%.3f m", ImGuiSliderFlags_Logarithmic);
+					ImGui::DragFloat("Prędkość X", &object.move.speedX, 0.000001f, 0.001f, std::numeric_limits<float>::max(), "%.4f m/s", ImGuiSliderFlags_Logarithmic);
+					ImGui::DragFloat("Prędkość Y", &object.move.speedY, 0.000001f, 0.001f, std::numeric_limits<float>::max(), "%.4f m/s", ImGuiSliderFlags_Logarithmic);
+					ImGui::Text("Prędkość całkowita: %.3f m/s", std::sqrt(std::pow(object.move.speedX, 2) + std::pow(object.move.speedY, 2)));
+					ImGui::EndMenu();
+				}
+				number++;
+			}
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
@@ -144,10 +162,10 @@ void Gravity::reset() {
 	object1.radius = EARTH_RADIUS;
 
 	object2.mass = 1;
-	object2.position = point(0, EARTH_RADIUS * 1.3);
+	object2.position = point(0, EARTH_RADIUS * 2);
 	object2.radius = EARTH_RADIUS * 0.2;
 	object2.move.speedX =  // Orbital Speed for object1
-		std::sqrt(GRAVITY_G * object1.mass / (EARTH_RADIUS * 1.3));
+		std::sqrt(GRAVITY_G * object1.mass / (EARTH_RADIUS * 2));
 
 	this->objects.push_back(object1);
 	this->objects.push_back(object2);

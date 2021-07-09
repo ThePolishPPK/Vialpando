@@ -9,10 +9,6 @@ find_library(libImGui
 	NAMES imgui ImGui DearImGui
 	REQUIRED
 )
-find_library(libGL
-	NAMES GL gl
-	REQUIRED
-)
 find_library(libSTB
 	NAMES stb STB
 	REQUIRED
@@ -82,7 +78,6 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
 	${libImGui}
-	${libGL}
 	${libSTB}
 	${libAllegro}
 	${libAllegro_video}
