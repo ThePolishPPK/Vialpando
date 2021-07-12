@@ -2,16 +2,18 @@
 
 #include <imgui.h>
 #include <stdio.h>
-#include <string>
 
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <string>
 #define GRAVITY_G 6.67430e-11
 #define EARTH_MASS 5.97219e24
 #define EARTH_RADIUS 6371008
 
 // FIXME: If objects goes on center other, then is infinite accelerated out
+
+float Gravity::sensitivity = 16.0f;
 
 Gravity::Gravity() {
 	this->keepActive = false;
@@ -59,17 +61,53 @@ void Gravity::draw() {
 		if (ImGui::BeginMenu("Obiekty", true)) {
 			unsigned char number = 1;
 			for (auto& object : this->objects) {
-				std::string name(std::string("Obiekt ")+std::to_string(number));
+				std::string name(std::string("Obiekt ") +
+								 std::to_string(number));
 				if (ImGui::BeginMenu(name.c_str())) {
-					// TODO: Improve sliders
-					ImGui::DragScalar("Masa", ImGuiDataType_Double, &object.mass, 0.0000005f, &this->massMin, &this->massMax, "%e kg", ImGuiSliderFlags_Logarithmic);
-					ImGui::DragFloat("Promień", &object.radius, 0.000001f, 0.001f, std::numeric_limits<float>::max(), "%.3f m", ImGuiSliderFlags_Logarithmic);
-					ImGui::DragFloat("Prędkość X", &object.move.speedX, 0.000001f, 0.001f, std::numeric_limits<float>::max(), "%.4f m/s", ImGuiSliderFlags_Logarithmic);
-					ImGui::DragFloat("Prędkość Y", &object.move.speedY, 0.000001f, 0.001f, std::numeric_limits<float>::max(), "%.4f m/s", ImGuiSliderFlags_Logarithmic);
-					ImGui::Text("Prędkość całkowita: %.3f m/s", std::sqrt(std::pow(object.move.speedX, 2) + std::pow(object.move.speedY, 2)));
+					Gravity::editObjectMenu(object.mass, object.radius,
+											object.move.speedX,
+											object.move.speedY);
 					ImGui::EndMenu();
 				}
 				number++;
+			}
+			if (ImGui::Button("Dodaj nowy obiekt")) {
+				ImGui::OpenPopup("AddNewObject");
+			}
+			if (ImGui::BeginPopupModal("AddNewObject", NULL,
+									   ImGuiWindowFlags_NoMove)) {
+				// FIXME: Destory position of other objects
+				static float radius = 0.0f, speedX = 0.0f, speedY = 0.0f;
+				static double mass = 0.0f, x = 0, y = 9;
+				static double min = std::numeric_limits<double>::lowest();
+				static double max = std::numeric_limits<double>::max();
+
+				Gravity::editObjectMenu(mass, radius, speedX, speedY);
+				ImGui::DragScalar("Pozycja X", ImGuiDataType_Double, &x,
+								  std::abs(x) / Gravity::sensitivity + 0.01f,
+								  &min, &max, "%e m");
+				ImGui::DragScalar("Pozycja Y", ImGuiDataType_Double, &y,
+								  std::abs(y) / Gravity::sensitivity + 0.01f,
+								  &min, &max, "%e m");
+
+				if (ImGui::Button("Dodaj")) {
+					this->objects.push_back(Gravity::object());
+					this->objects.back().radius = radius;
+					this->objects.back().mass = mass;
+					this->objects.back().move.speedX = speedX;
+					this->objects.back().move.speedY = speedY;
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Reset")) {
+					radius = 0;
+					speedX = 0;
+					speedY = 0;
+					mass = 0;
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Anuluj")) ImGui::CloseCurrentPopup();
+				ImGui::EndPopup();
 			}
 			ImGui::EndMenu();
 		}
@@ -124,9 +162,9 @@ void Gravity::draw() {
 		}
 	}
 
-	if (ImGui::GetTime() - this->lastMoveTime < 1000.0) {
+	if (ImGui::GetTime() - this->lastMoveTime < 1.0) {
 		double part =
-			(ImGui::GetTime() - this->lastMoveTime) / (1000 / this->timeSpeed);
+			(ImGui::GetTime() - this->lastMoveTime) / (1 / this->timeSpeed);
 		for (auto& obj : this->objects) {
 			for (auto& force : obj.forcesVector) {
 				double speed = force.power / obj.mass;
@@ -239,4 +277,27 @@ void Gravity::drawArrow(const Gravity::point& start, const Gravity::point& end,
 			   end.y + this->arrowLength * std::sin(angle - angleDiff))};
 	drawList->AddPolyline((ImVec2*)&arrow, 3, this->forceColor, false,
 						  this->vectorThickness);
+}
+
+void Gravity::editObjectMenu(double& mass, float& radius, float& speedX,
+							 float& speedY) {
+	// TODO: Incress accuranct
+	double min = 0.001f, max = std::numeric_limits<double>::max();
+	ImGui::DragScalar("Masa", ImGuiDataType_Double, &mass,
+					  std::abs(mass) / Gravity::sensitivity + 0.01f, &min, &max,
+					  "%e kg");
+	ImGui::DragFloat("Promień", &radius,
+					 std::abs(radius) / Gravity::sensitivity + 0.01f, 0.0001f,
+					 std::numeric_limits<float>::max(), "%.4f m",
+					 ImGuiSliderFlags_NoRoundToFormat);
+	ImGui::DragFloat(
+		"Prędkość X", &speedX, std::abs(speedX) / Gravity::sensitivity + 0.01f,
+		std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(),
+		"%.3f m/s", ImGuiSliderFlags_NoRoundToFormat);
+	ImGui::DragFloat(
+		"Prędkość Y", &speedY, std::abs(speedY) / Gravity::sensitivity + 0.01f,
+		std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(),
+		"%.3f m/s", ImGuiSliderFlags_NoRoundToFormat);
+	ImGui::Text("Prędkość całkowita: %.2f m/s",
+				std::sqrt(std::pow(speedX, 2) + std::pow(speedY, 2)));
 }

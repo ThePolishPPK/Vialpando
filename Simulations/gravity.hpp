@@ -3,8 +3,8 @@
 
 #include <imgui.h>
 
-#include <vector>
 #include <limits>
+#include <vector>
 
 #include "../view.hpp"
 
@@ -12,6 +12,7 @@ class Gravity : public View {
    public:
 	Gravity();
 	void draw();
+	static float sensitivity;
 
    private:
 	ImVec2 lastDrawingLocation;
@@ -25,7 +26,6 @@ class Gravity : public View {
 	int viewX, viewY;
 	double lastMoveTime;
 	float timeSpeed;
-	double massMin = 0.0001, massMax = std::numeric_limits<double>::max();
 	void reset();
 	struct Force {
 		double power;  // In Newtons
@@ -43,8 +43,8 @@ class Gravity : public View {
 		float radius;
 		double mass;
 		struct {
-			float speedX = 0;	// In m/s
-			float speedY = 0;	// In m/s
+			float speedX = 0;  // In m/s
+			float speedY = 0;  // In m/s
 		} move;
 		std::vector<Force> forcesVector;
 		Force resultantOfForces();
@@ -54,6 +54,8 @@ class Gravity : public View {
 	Force calcGravityForce(const object& o1, const object& o2);
 	static float angleBetweenPoints(const point& from, const point& to);
 	void drawArrow(const point& start, const point& end, ImDrawList* drawList);
+	static void editObjectMenu(double& mass, float& radius, float& speedX,
+							   float& speedY);
 };
 
 #endif

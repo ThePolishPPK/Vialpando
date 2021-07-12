@@ -10,7 +10,7 @@ env:
 
 jobs:
   build:
-    runs-on: debian-bullseye
+    runs-on: ubuntu-latest
     steps:
 
       - uses: actions/checkout@v2
@@ -18,15 +18,21 @@ jobs:
       - name: Update repository
         run: apt update
 
-      - name: Install packages
+      - name: Install depend packages
         run: |
-          apt install -y libimgui-dev
           apt install -y liballegro5-dev
           apt install -y libstb-dev
           apt install -y cmake make
+          apt install -y gcc g++
+          apt install -y wget
+
+      - name: Download and install DearImGui
+        run: |
+          wget http://ftp.br.debian.org/debian/pool/main/i/imgui/libimgui-dev_1.81+ds-1_amd64.deb
+          dpkg -i libimgui*
 
       - name: Create MakeFile
-        run: cmake .
+        run: cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ .
 
       - name: Make
         run: make
