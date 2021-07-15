@@ -22,7 +22,10 @@ class Gravity : public View {
 	float arrowAngle;
 	float arrowLength;
 	ImColor forceColor;
+	ImColor axesColor;
+	ImColor axesStepsColor;
 	bool drawForceVectors;
+	bool drawAxes;
 	int viewX, viewY;
 	double lastMoveTime;
 	float timeSpeed;

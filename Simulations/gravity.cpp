@@ -23,10 +23,13 @@ Gravity::Gravity() {
 	this->viewX = 300;
 	this->viewY = 300;
 	this->drawForceVectors = true;
+	this->drawAxes = true;
 	this->vectorThickness = 3.0;
 	this->arrowAngle = 50.0;
 	this->arrowLength = 8.0;
 	this->forceColor = ImColor(0, 255, 251);
+	this->axesColor = ImColor(255, 255, 0);
+	this->axesStepsColor = ImColor(64, 255, 16);
 	this->lastMoveTime = ImGui::GetTime();
 	this->timeSpeed = 1.0;
 	this->reset();
@@ -55,7 +58,11 @@ void Gravity::draw() {
 			ImGui::DragFloat("Długość strzałek", &this->arrowLength, 0.08, 0,
 							 128, "%.2f");
 			ImGui::ColorEdit3("Kolor wektorów", (float*)&this->forceColor);
+			ImGui::ColorEdit3("Kolor osi", (float*)&this->axesColor);
+			ImGui::ColorEdit3("Kolor skali na osi",
+							  (float*)&this->axesStepsColor);
 			ImGui::Checkbox("Wektory sił", &this->drawForceVectors);
+			ImGui::Checkbox("Rysuj osie", &this->drawAxes);
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Obiekty", true)) {
@@ -67,6 +74,8 @@ void Gravity::draw() {
 					Gravity::editObjectMenu(object.mass, object.radius,
 											object.move.speedX,
 											object.move.speedY);
+					ImGui::Text("Pozycja:\n\tX: %e m\n\tY: %e m",
+								object.position.x, object.position.y);
 					ImGui::EndMenu();
 				}
 				number++;
@@ -76,7 +85,6 @@ void Gravity::draw() {
 			}
 			if (ImGui::BeginPopupModal("AddNewObject", NULL,
 									   ImGuiWindowFlags_NoMove)) {
-				// FIXME: Destory position of other objects
 				static float radius = 0.0f, speedX = 0.0f, speedY = 0.0f;
 				static double mass = 0.0f, x = 0, y = 9;
 				static double min = std::numeric_limits<double>::lowest();
@@ -91,11 +99,13 @@ void Gravity::draw() {
 								  &min, &max, "%e m");
 
 				if (ImGui::Button("Dodaj")) {
-					this->objects.push_back(Gravity::object());
-					this->objects.back().radius = radius;
-					this->objects.back().mass = mass;
-					this->objects.back().move.speedX = speedX;
-					this->objects.back().move.speedY = speedY;
+					Gravity::object obj;
+					obj.radius = radius;
+					obj.mass = mass;
+					obj.move.speedX = speedX;
+					obj.move.speedY = speedY;
+					obj.position = Gravity::point(x, y);
+					this->objects.push_back(obj);
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::SameLine();
@@ -184,6 +194,52 @@ void Gravity::draw() {
 				grav.position.y != obj.position.y || grav.mass != obj.mass) {
 				obj.forcesVector.push_back(this->calcGravityForce(obj, grav));
 			}
+		}
+	}
+
+	if (this->drawAxes) {
+		double step;
+		int length;
+		int drawX, drawY;
+		int exp;
+		exp = std::floor(std::log10(this->scale));
+		step = std::ceil(this->scale / std::pow(10, exp) / 5) *
+			   std::pow(10, exp) * 500;
+		length = step * (1 / this->scale);
+
+		drawY = this->viewX >= 0 && this->viewX < windowSize.x
+					? this->viewX
+					: (this->viewX < 0 ? 0 : windowSize.x - 1);
+		drawX = this->viewY >= 0 && this->viewY < windowSize.y
+					? this->viewY
+					: (this->viewY < 0 ? 0 : windowSize.y - 1);
+
+		list->AddLine(ImVec2(p0.x + drawY, p0.y),
+					  ImVec2(p0.x + drawY, p0.y + windowSize.y),
+					  this->axesColor, 3);
+		list->AddLine(ImVec2(p0.x, p0.y + drawX),
+					  ImVec2(p0.x + windowSize.x, p0.y + drawX),
+					  this->axesColor, 3);
+
+		// TODO: Convert two loops into one
+		for (int x = -(int)std::floor(this->viewX / (double)length) - 1,
+				 pos = x * length;
+			 pos <= -this->viewX + windowSize.x + (2 * length); x++) {
+			char label[12];
+			std::snprintf(&label[0], 12, "%.1em", x * step);
+			list->AddText(ImVec2(p0.x + pos + this->viewX, p0.y + drawX + 20),
+						  this->axesStepsColor, &label[0]);
+			pos += length;
+		}
+
+		for (int y = -(int)std::floor(this->viewY / (double)length) - 1,
+				 pos = y * length;
+			 pos <= -this->viewY + windowSize.y + (2 * length); y++) {
+			char label[12];
+			std::snprintf(&label[0], 12, "%.1em", y * step);
+			list->AddText(ImVec2(p0.x + drawY, p0.y + pos + this->viewY),
+						  this->axesStepsColor, &label[0]);
+			pos += length;
 		}
 	}
 
@@ -288,16 +344,16 @@ void Gravity::editObjectMenu(double& mass, float& radius, float& speedX,
 					  "%e kg");
 	ImGui::DragFloat("Promień", &radius,
 					 std::abs(radius) / Gravity::sensitivity + 0.01f, 0.0001f,
-					 std::numeric_limits<float>::max(), "%.4f m",
+					 std::numeric_limits<float>::max(), "% .4f m",
 					 ImGuiSliderFlags_NoRoundToFormat);
 	ImGui::DragFloat(
 		"Prędkość X", &speedX, std::abs(speedX) / Gravity::sensitivity + 0.01f,
 		std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(),
-		"%.3f m/s", ImGuiSliderFlags_NoRoundToFormat);
+		"% .3f m/s", ImGuiSliderFlags_NoRoundToFormat);
 	ImGui::DragFloat(
 		"Prędkość Y", &speedY, std::abs(speedY) / Gravity::sensitivity + 0.01f,
 		std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(),
-		"%.3f m/s", ImGuiSliderFlags_NoRoundToFormat);
-	ImGui::Text("Prędkość całkowita: %.2f m/s",
+		"% .3f m/s", ImGuiSliderFlags_NoRoundToFormat);
+	ImGui::Text("Prędkość całkowita: % .2f m/s",
 				std::sqrt(std::pow(speedX, 2) + std::pow(speedY, 2)));
 }
