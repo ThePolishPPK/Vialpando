@@ -221,25 +221,34 @@ void Gravity::draw() {
 					  ImVec2(p0.x + windowSize.x, p0.y + drawX),
 					  this->axesColor, 3);
 
-		// TODO: Convert two loops into one
-		for (int x = -(int)std::floor(this->viewX / (double)length) - 1,
-				 pos = x * length;
-			 pos <= -this->viewX + windowSize.x + (2 * length); x++) {
+		signed char offsetX = (drawX < windowSize.y - this->viewY)
+								  ? 8
+								  : -8 - ImGui::GetFontSize(),
+					offsetY = (drawY < windowSize.x - this->viewX)
+								  ? 5
+								  : -5 - ImGui::CalcTextSize("-0.0e+00m").x;
+
+		for (int x = -this->viewX / length - 1;
+			 x <= (-this->viewX + windowSize.x) / length + 2; x++) {
 			char label[12];
 			std::snprintf(&label[0], 12, "%.1em", x * step);
-			list->AddText(ImVec2(p0.x + pos + this->viewX, p0.y + drawX + 20),
+			ImVec2 point(p0.x + x * length + this->viewX, p0.y + drawX);
+			list->AddLine(ImVec2(point.x, point.y - 5),
+						  ImVec2(point.x, point.y + 5), this->axesColor);
+			list->AddText(ImVec2(point.x - 40, point.y + offsetX),
 						  this->axesStepsColor, &label[0]);
-			pos += length;
 		}
 
-		for (int y = -(int)std::floor(this->viewY / (double)length) - 1,
-				 pos = y * length;
-			 pos <= -this->viewY + windowSize.y + (2 * length); y++) {
+		for (int y = -this->viewY / length - 1;
+			 y <= (-this->viewY + windowSize.y) / length + 2; y++) {
+			if (y == 0) continue;
 			char label[12];
 			std::snprintf(&label[0], 12, "%.1em", y * step);
-			list->AddText(ImVec2(p0.x + drawY, p0.y + pos + this->viewY),
+			ImVec2 point(p0.x + drawY, p0.y + y * length + this->viewY);
+			list->AddLine(ImVec2(point.x - 5, point.y),
+						  ImVec2(point.x + 5, point.y), this->axesColor);
+			list->AddText(ImVec2(point.x + offsetY, point.y - 8),
 						  this->axesStepsColor, &label[0]);
-			pos += length;
 		}
 	}
 
