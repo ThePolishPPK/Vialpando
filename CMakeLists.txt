@@ -3,14 +3,12 @@ project("Vialpando"
 )
 cmake_minimum_required(VERSION 3.13)
 
-set(ImGuiHeaders "/usr/include/imgui/")
-
-find_library(libImGui
-	NAMES imgui ImGui DearImGui
-	REQUIRED
-)
 find_library(libSTB
 	NAMES stb STB
+	REQUIRED
+)
+find_library(libFreeType
+	NAMES freetype FreeType
 	REQUIRED
 )
 find_library(libAllegro
@@ -67,7 +65,10 @@ find_library(libAllegro_acodec
 )
 
 include_directories(
-	${ImGuiHeaders}
+	"./modules/imgui/"
+	"./modules/imgui/backends/"
+	"./modules/imgui/misc/cpp/"
+	"./modules/imgui/misc/freetype/"
 )
 
 add_executable(${PROJECT_NAME}
@@ -76,10 +77,24 @@ add_executable(${PROJECT_NAME}
 	Simulations/gravity.cpp
 )
 
+add_library(ImGui_Allegro STATIC
+	modules/imgui/imgui_tables.cpp
+	modules/imgui/imgui_widgets.cpp
+	modules/imgui/imgui_demo.cpp
+	modules/imgui/imgui_draw.cpp
+	modules/imgui/imgui.cpp
+	modules/imgui/misc/freetype/imgui_freetype.cpp
+	modules/imgui/misc/cpp
+	modules/imgui/misc/cpp/imgui_stdlib.cpp
+	modules/imgui/backends/imgui_impl_allegro5.cpp
+)
+
+
 target_link_libraries(${PROJECT_NAME}
-	${libImGui}
+	ImGui_Allegro
 	${libSTB}
 	${libAllegro}
+	${libFreeType}
 	${libAllegro_video}
 	${libAllegro_ttf}
 	${libAllegro_primitives}

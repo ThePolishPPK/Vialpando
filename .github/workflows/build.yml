@@ -11,21 +11,26 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: debian:bullseye
     steps:
 
       - uses: actions/checkout@v2
 
       - name: Update repository
-        run: apt update
+        run: |
+          sudo apt-fast update
 
       - name: Install depend packages
         run: |
-          apt install -y libimgui-dev
-          apt install -y liballegro5-dev
-          apt install -y libstb-dev
-          apt install -y cmake make
-          apt install -y gcc g++
+          sudo apt-fast install -y liballegro5-dev
+          sudo apt-fast install -y libstb-dev
+          sudo apt-fast install -y libfreetype-dev
+          sudo apt-fast install -y cmake make
+          sudo apt-fast install -y gcc g++ git
+
+      - name: Get submodules
+        run: |
+          git submodule init
+          git submodule add --name imgui --depth 1 -- git://github.com/ocornut/imgui.git modules/imgui
 
       - name: Create MakeFile
         run: cmake .

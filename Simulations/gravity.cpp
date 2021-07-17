@@ -23,7 +23,7 @@ Gravity::Gravity() {
 	this->viewX = 300;
 	this->viewY = 300;
 	this->drawForceVectors = true;
-	this->drawAxes = true;
+	this->drawAxes = false;
 	this->vectorThickness = 3.0;
 	this->arrowAngle = 50.0;
 	this->arrowLength = 8.0;
@@ -85,8 +85,8 @@ void Gravity::draw() {
 			}
 			if (ImGui::BeginPopupModal("AddNewObject", NULL,
 									   ImGuiWindowFlags_NoMove)) {
-				static float radius = 0.0f, speedX = 0.0f, speedY = 0.0f;
-				static double mass = 0.0f, x = 0, y = 9;
+				static float radius = 0.0001f, speedX = 0.0f, speedY = 0.0f;
+				static double mass = 0.001f, x = 0, y = 9;
 				static double min = std::numeric_limits<double>::lowest();
 				static double max = std::numeric_limits<double>::max();
 
@@ -110,10 +110,10 @@ void Gravity::draw() {
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Reset")) {
-					radius = 0;
+					radius = 0.0001;
 					speedX = 0;
 					speedY = 0;
-					mass = 0;
+					mass = 0.001;
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Anuluj")) ImGui::CloseCurrentPopup();
@@ -141,6 +141,12 @@ void Gravity::draw() {
 		this->viewY += delta.y;
 	}
 
+	if (ImGui::GetIO().MouseWheel != 0) {
+		this->scale *= 1 + (-ImGui::GetIO().MouseWheel / 5);
+	}
+
+	list->ChannelsSplit(2);
+
 	for (auto& obj : this->objects) {
 		ImVec2 lastDrawing(
 			obj.position.x * (1 / this->scale) + p0.x + this->viewX,
@@ -155,10 +161,12 @@ void Gravity::draw() {
 			radius = 16384;
 		}
 
+		list->ChannelsSetCurrent(0);
+
 		list->AddCircleFilled(lastDrawing, radius, ImColor(255, 0, 0, 255));
 
-		// TODO: Repair drawing vectors under objects
 		if (this->drawForceVectors) {
+			list->ChannelsSetCurrent(1);
 			for (auto& force : obj.forcesVector) {
 				this->drawArrow(
 					point(lastDrawing.x, lastDrawing.y),
@@ -171,6 +179,7 @@ void Gravity::draw() {
 			}
 		}
 	}
+	list->ChannelsMerge();
 
 	if (ImGui::GetTime() - this->lastMoveTime < 1.0) {
 		double part =
