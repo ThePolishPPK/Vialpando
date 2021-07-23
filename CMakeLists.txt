@@ -65,10 +65,10 @@ find_library(libAllegro_acodec
 )
 
 include_directories(
-	"./modules/imgui/"
-	"./modules/imgui/backends/"
-	"./modules/imgui/misc/cpp/"
-	"./modules/imgui/misc/freetype/"
+	"./imgui/"
+	"./imgui/backends/"
+	"./imgui/misc/cpp/"
+	"./imgui/misc/freetype/"
 )
 
 add_executable(${PROJECT_NAME}
@@ -78,15 +78,15 @@ add_executable(${PROJECT_NAME}
 )
 
 add_library(ImGui_Allegro STATIC
-	modules/imgui/imgui_tables.cpp
-	modules/imgui/imgui_widgets.cpp
-	modules/imgui/imgui_demo.cpp
-	modules/imgui/imgui_draw.cpp
-	modules/imgui/imgui.cpp
-	modules/imgui/misc/freetype/imgui_freetype.cpp
-	modules/imgui/misc/cpp
-	modules/imgui/misc/cpp/imgui_stdlib.cpp
-	modules/imgui/backends/imgui_impl_allegro5.cpp
+	./imgui/imgui_tables.cpp
+	./imgui/imgui_widgets.cpp
+	./imgui/imgui_demo.cpp
+	./imgui/imgui_draw.cpp
+	./imgui/imgui.cpp
+	./imgui/misc/freetype/imgui_freetype.cpp
+	./imgui/misc/cpp
+	./imgui/misc/cpp/imgui_stdlib.cpp
+	./imgui/backends/imgui_impl_allegro5.cpp
 )
 
 
