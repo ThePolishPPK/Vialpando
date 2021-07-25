@@ -45,6 +45,7 @@ class Gravity : public View {
 		point position;
 		float radius;
 		double mass;
+		ImColor color = ImColor(255, 0, 0);
 		struct {
 			float speedX = 0;  // In m/s
 			float speedY = 0;  // In m/s

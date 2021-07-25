@@ -30,7 +30,7 @@ jobs:
       - name: Get submodules
         run: |
           git submodule init
-          git submodule add --name imgui --depth 1 -- git://github.com/ocornut/imgui.git modules/imgui
+          git pull --recurse-submodules
 
       - name: Create MakeFile
         run: cmake .
