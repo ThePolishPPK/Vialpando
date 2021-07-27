@@ -7,12 +7,14 @@
 #include <map>
 #include <string>
 
+#include "Simulations/dynamic_law.hpp"
 #include "Simulations/gravity.hpp"
 
 Menu::Menu(ImGuiIO& io) {
 	this->IO = &io;
 	this->keepActive = true;
 	this->views.push_back(new Gravity());
+	this->views.push_back(new Dynamics());
 }
 
 void Menu::draw() {
@@ -44,7 +46,8 @@ void Menu::draw() {
 	}
 }
 
-std::map<std::string, const char*> Menu::translation({
-	{std::string("Gravity"), "Siła grawitacji"},
+std::map<std::string, const char*> Menu::translation(
+	{{std::string("Gravity"), "Siła grawitacji"},
+	 {std::string("Dynamic Laws"), "Zasady dynamiki"}
 
-});
+	});

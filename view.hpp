@@ -6,7 +6,6 @@
 class View {
    public:
 	virtual void draw() = 0;
-	ImGuiIO* IO;
 	bool keepActive;
 	const char* name;
 };

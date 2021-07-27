@@ -69,12 +69,15 @@ include_directories(
 	"./imgui/backends/"
 	"./imgui/misc/cpp/"
 	"./imgui/misc/freetype/"
+	"/usr/include/freetype2/"
+	"/usr/include/stb/"
 )
 
 add_executable(${PROJECT_NAME}
 	main.cpp
 	menu.cpp
 	Simulations/gravity.cpp
+	Simulations/dynamic_law.cpp
 )
 
 add_library(ImGui_Allegro STATIC
