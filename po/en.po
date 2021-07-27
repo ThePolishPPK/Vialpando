@@ -1,0 +1,87 @@
+msgid "Menu"
+msgstr "Menu"
+
+msgid "Available simulations"
+msgstr "Available simulations"
+
+msgid "Gravity"
+msgstr "Gravity"
+
+msgid "Dynamic Laws"
+msgstr "Dynamic Laws"
+
+
+msgid "Options"
+msgstr "Options"
+
+msgid "Scale"
+msgstr "Scale"
+
+msgid "Time speed"
+msgstr "Time speed"
+
+msgid "Color"
+msgstr "Color"
+
+msgid "Axes"
+msgstr "Axes"
+
+msgid "Axis options"
+msgstr "Axis options"
+
+msgid "Axis color"
+msgstr "Axis color"
+
+msgid "Labels color"
+msgstr "Labels color"
+
+msgid "Objects"
+msgstr "Objects"
+
+msgid "Object"
+msgstr "Object"
+
+msgid "Position"
+msgstr "Position"
+
+msgid "Add new object"
+msgstr "Add new object"
+
+msgid "New object"
+msgstr "New object"
+
+msgid "Add"
+msgstr "Add"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Mass"
+msgstr "Mass"
+
+msgid "Radius"
+msgstr "Radius"
+
+msgid "Speed"
+msgstr "Speed"
+
+msgid "Total speed"
+msgstr "Total speed"
+
+msgid "Force vectors"
+msgstr "Force vectors"
+
+msgid "Vector options"
+msgstr "Vector options"
+
+msgid "Line width"
+msgstr "Line width"
+
+msgid "Angle between arrow"
+msgstr "Angle between arrow"
+
+msgid "Arrow length"
+msgstr "Arrow length"

@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "translate.hpp"
 #include "view.hpp"
 
 class Menu : public View {
@@ -19,7 +20,6 @@ class Menu : public View {
    private:
 	std::vector<View*> views;
 	std::vector<View*> activeSimulations;
-	static std::map<std::string, const char*> translation;
 };
 
 #endif

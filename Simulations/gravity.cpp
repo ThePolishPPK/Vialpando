@@ -7,6 +7,8 @@
 #include <iostream>
 #include <limits>
 #include <string>
+
+#include "../translate.hpp"
 #define GRAVITY_G 6.67430e-11
 #define EARTH_MASS 5.97219e24
 #define EARTH_RADIUS 6371008
@@ -43,60 +45,65 @@ void Gravity::draw() {
 	ImGui::Begin(this->name, &this->keepActive, ImGuiWindowFlags_MenuBar);
 
 	if (ImGui::BeginMenuBar()) {
-		if (ImGui::BeginMenu("Opcje", true)) {
-			ImGui::DragFloat("Skala wielkości", &this->scale, 16, 0,
+		if (ImGui::BeginMenu(tr("Options").c_str(), true)) {
+			ImGui::DragFloat(tr("Scale").c_str(), &this->scale, 16, 0,
 							 std::pow(2, 18), "%.7f",
 							 ImGuiSliderFlags_Logarithmic);
-			ImGui::DragFloat("Szybkość czasu", &this->timeSpeed,
+			ImGui::DragFloat(tr("Time speed").c_str(), &this->timeSpeed,
 							 std::pow(2, 14), 0, std::pow(2, 24), "%.2f",
 							 ImGuiSliderFlags_Logarithmic);
 
-			ImGui::Checkbox("Wektory sił", &this->drawForceVectors);
+			ImGui::Checkbox(tr("Force vectors").c_str(),
+							&this->drawForceVectors);
 			ImGui::SameLine(ImGui::CalcItemWidth());
-			if (ImGui::BeginMenu("Opcje wektorów")) {
-				ImGui::DragFloat("Skala", &this->forceScale, 1, 0,
+			if (ImGui::BeginMenu(tr("Vector options").c_str())) {
+				ImGui::DragFloat(tr("Scale").c_str(), &this->forceScale, 1, 0,
 								 std::pow(2, 10), "%.7f",
 								 ImGuiSliderFlags_Logarithmic);
-				ImGui::DragFloat("Grubość lini", &this->vectorThickness, 0.02,
-								 0, 32, "%.0f");
-				ImGui::DragFloat("Kąt między strzałkami", &this->arrowAngle,
-								 0.08, 0, 180, "%.2f");
-				ImGui::DragFloat("Długość strzałek", &this->arrowLength, 0.08,
-								 0, 128, "%.2f");
-				ImGui::ColorEdit3("Kolor", (float*)&this->forceColor);
+				ImGui::DragFloat(tr("Line width").c_str(),
+								 &this->vectorThickness, 0.02, 0, 32, "%.0f");
+				ImGui::DragFloat(tr("Angle between arrow").c_str(),
+								 &this->arrowAngle, 0.08, 0, 180, "%.2f");
+				ImGui::DragFloat(tr("Arrow length").c_str(), &this->arrowLength,
+								 0.08, 0, 128, "%.2f");
+				ImGui::ColorEdit3(tr("Color").c_str(),
+								  (float*)&this->forceColor);
 				ImGui::EndMenu();
 			}
 
-			ImGui::Checkbox("Osie", &this->drawAxes);
+			ImGui::Checkbox(tr("Axes").c_str(), &this->drawAxes);
 			ImGui::SameLine(ImGui::CalcItemWidth());
-			if (ImGui::BeginMenu("Opcje osi")) {
-				ImGui::ColorEdit3("Kolor osi", (float*)&this->axesColor);
-				ImGui::ColorEdit3("Kolor etykiet",
+			if (ImGui::BeginMenu(tr("Axis options").c_str())) {
+				ImGui::ColorEdit3(tr("Axis color").c_str(),
+								  (float*)&this->axesColor);
+				ImGui::ColorEdit3(tr("Labels color").c_str(),
 								  (float*)&this->axesStepsColor);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Obiekty", true)) {
+		if (ImGui::BeginMenu(tr("Objects").c_str(), true)) {
 			unsigned char number = 1;
 			const static double posMin = std::numeric_limits<double>::lowest(),
 								posMax = std::numeric_limits<double>::max();
 
 			for (auto& object : this->objects) {
-				std::string name(std::string("Obiekt ") +
-								 std::to_string(number));
+				std::string name(tr("Object") + " " + std::to_string(number));
 				if (ImGui::BeginMenu(name.c_str())) {
 					Gravity::editObjectMenu(object.mass, object.radius,
 											object.move.speedX,
 											object.move.speedY);
-					ImGui::ColorEdit3("Kolor", (float*)&object.color);
+					ImGui::ColorEdit3(tr("Color").c_str(),
+									  (float*)&object.color);
 					ImGui::DragScalar(
-						"Pozycja X", ImGuiDataType_Double, &object.position.x,
+						(tr("Position") + " X").c_str(), ImGuiDataType_Double,
+						&object.position.x,
 						std::abs(object.position.x) / Gravity::sensitivity +
 							0.01f,
 						&posMin, &posMax, "%e m", ImGuiSliderFlags_None);
 					ImGui::DragScalar(
-						"Pozycja Y", ImGuiDataType_Double, &object.position.y,
+						(tr("Position") + " Y").c_str(), ImGuiDataType_Double,
+						&object.position.y,
 						std::abs(object.position.y) / Gravity::sensitivity +
 							0.01f,
 						&posMin, &posMax, "%e m", ImGuiSliderFlags_None);
@@ -105,10 +112,10 @@ void Gravity::draw() {
 				}
 				number++;
 			}
-			if (ImGui::Button("Dodaj nowy obiekt")) {
-				ImGui::OpenPopup("AddNewObject");
+			if (ImGui::Button(tr("Add new object").c_str())) {
+				ImGui::OpenPopup(tr("New object").c_str());
 			}
-			if (ImGui::BeginPopupModal("AddNewObject", NULL,
+			if (ImGui::BeginPopupModal(tr("New object").c_str(), NULL,
 									   ImGuiWindowFlags_NoMove)) {
 				static float radius = 1.0f, speedX = 0.0f, speedY = 0.0f;
 				static double mass = 1.0, x = 0.0, y = 0.0;
@@ -117,15 +124,17 @@ void Gravity::draw() {
 				static ImColor color = ImColor(255, 0, 0);
 
 				Gravity::editObjectMenu(mass, radius, speedX, speedY);
-				ImGui::ColorEdit3("Kolor", (float*)&color);
-				ImGui::DragScalar("Pozycja X", ImGuiDataType_Double, &x,
+				ImGui::ColorEdit3(tr("Color").c_str(), (float*)&color);
+				ImGui::DragScalar((tr("Position") + " X").c_str(),
+								  ImGuiDataType_Double, &x,
 								  std::abs(x) / Gravity::sensitivity + 0.01f,
 								  &min, &max, "%e m");
-				ImGui::DragScalar("Pozycja Y", ImGuiDataType_Double, &y,
+				ImGui::DragScalar((tr("Position") + " Y").c_str(),
+								  ImGuiDataType_Double, &y,
 								  std::abs(y) / Gravity::sensitivity + 0.01f,
 								  &min, &max, "%e m");
 
-				if (ImGui::Button("Dodaj")) {
+				if (ImGui::Button(tr("Add").c_str())) {
 					Gravity::object obj;
 					obj.radius = radius;
 					obj.mass = mass;
@@ -137,7 +146,7 @@ void Gravity::draw() {
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::SameLine();
-				if (ImGui::Button("Reset")) {
+				if (ImGui::Button(tr("Reset").c_str())) {
 					radius = 1.0f;
 					speedX = 0.0;
 					speedY = 0.0;
@@ -145,7 +154,8 @@ void Gravity::draw() {
 					color = ImColor(255, 0, 0);
 				}
 				ImGui::SameLine();
-				if (ImGui::Button("Anuluj")) ImGui::CloseCurrentPopup();
+				if (ImGui::Button(tr("Cancel").c_str()))
+					ImGui::CloseCurrentPopup();
 				ImGui::EndPopup();
 			}
 			ImGui::EndMenu();
@@ -386,21 +396,23 @@ void Gravity::editObjectMenu(double& mass, float& radius, float& speedX,
 							 float& speedY) {
 	// TODO: Incress accuranct
 	const static double min = 0.001, max = std::numeric_limits<double>::max();
-	ImGui::DragScalar("Masa", ImGuiDataType_Double, &mass,
+	ImGui::DragScalar(tr("Mass").c_str(), ImGuiDataType_Double, &mass,
 					  std::abs(mass) / Gravity::sensitivity + 0.01f, &min, &max,
 					  "%e kg");
-	ImGui::DragFloat("Promień", &radius,
+	ImGui::DragFloat(tr("Radius").c_str(), &radius,
 					 std::abs(radius) / Gravity::sensitivity + 0.01f, 0.0001f,
 					 std::numeric_limits<float>::max(), "% .4f m",
 					 ImGuiSliderFlags_NoRoundToFormat);
-	ImGui::DragFloat(
-		"Prędkość X", &speedX, std::abs(speedX) / Gravity::sensitivity + 0.01f,
-		std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(),
-		"% .3f m/s", ImGuiSliderFlags_NoRoundToFormat);
-	ImGui::DragFloat(
-		"Prędkość Y", &speedY, std::abs(speedY) / Gravity::sensitivity + 0.01f,
-		std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(),
-		"% .3f m/s", ImGuiSliderFlags_NoRoundToFormat);
-	ImGui::Text("Prędkość całkowita: % .2f m/s",
+	ImGui::DragFloat((tr("Speed") + " X").c_str(), &speedX,
+					 std::abs(speedX) / Gravity::sensitivity + 0.01f,
+					 std::numeric_limits<float>::lowest(),
+					 std::numeric_limits<float>::max(), "% .3f m/s",
+					 ImGuiSliderFlags_NoRoundToFormat);
+	ImGui::DragFloat((tr("Speed") + " Y").c_str(), &speedY,
+					 std::abs(speedY) / Gravity::sensitivity + 0.01f,
+					 std::numeric_limits<float>::lowest(),
+					 std::numeric_limits<float>::max(), "% .3f m/s",
+					 ImGuiSliderFlags_NoRoundToFormat);
+	ImGui::Text((tr("Total speed") + ": % .2f m/s").c_str(),
 				std::sqrt(std::pow(speedX, 2) + std::pow(speedY, 2)));
 }

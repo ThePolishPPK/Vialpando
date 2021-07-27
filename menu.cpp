@@ -9,12 +9,15 @@
 
 #include "Simulations/dynamic_law.hpp"
 #include "Simulations/gravity.hpp"
+#include "translate.hpp"
 
 Menu::Menu(ImGuiIO& io) {
 	this->IO = &io;
 	this->keepActive = true;
 	this->views.push_back(new Gravity());
 	this->views.push_back(new Dynamics());
+	processDicts();
+	setLanguage(std::string("pl"));
 }
 
 void Menu::draw() {
@@ -22,14 +25,14 @@ void Menu::draw() {
 	ImGui::SetNextWindowSize(viewport->WorkSize);
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowBgAlpha(1);
-	ImGui::Begin("Menu", NULL,
+	ImGui::Begin(tr("Menu").c_str(), NULL,
 				 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
 					 ImGuiWindowFlags_NoResize |
 					 ImGuiWindowFlags_NoSavedSettings |
 					 ImGuiWindowFlags_NoBringToFrontOnFocus);
-	ImGui::Text("Dostępne symulacje");
+	ImGui::Text("%s", tr("Available simulations").c_str());
 	for (auto& view : this->views) {
-		if (ImGui::Button(Menu::translation[std::string(view->name)]) &&
+		if (ImGui::Button(tr(view->name).c_str()) &&
 			find(activeSimulations.begin(), activeSimulations.end(), view) ==
 				activeSimulations.end()) {
 			this->activeSimulations.push_back(view);
@@ -45,9 +48,3 @@ void Menu::draw() {
 			view->draw();
 	}
 }
-
-std::map<std::string, const char*> Menu::translation(
-	{{std::string("Gravity"), "Siła grawitacji"},
-	 {std::string("Dynamic Laws"), "Zasady dynamiki"}
-
-	});
