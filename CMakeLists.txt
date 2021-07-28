@@ -79,6 +79,7 @@ include_directories(
 add_executable(${PROJECT_NAME}
 	main.cpp
 	menu.cpp
+	basic.cpp
 	translate.cpp
 	Simulations/gravity.cpp
 	Simulations/dynamic_law.cpp

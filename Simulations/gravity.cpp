@@ -8,6 +8,7 @@
 #include <limits>
 #include <string>
 
+#include "../basic.hpp"
 #include "../translate.hpp"
 #define GRAVITY_G 6.67430e-11
 #define EARTH_MASS 5.97219e24
@@ -140,7 +141,7 @@ void Gravity::draw() {
 					obj.mass = mass;
 					obj.move.speedX = speedX;
 					obj.move.speedY = speedY;
-					obj.position = Gravity::point(x, y);
+					obj.position = ImVec2(x, y);
 					obj.color = color;
 					this->objects.push_back(obj);
 					ImGui::CloseCurrentPopup();
@@ -207,14 +208,15 @@ void Gravity::draw() {
 		if (this->drawForceVectors) {
 			list->ChannelsSetCurrent(1);
 			for (auto& force : obj.forcesVector) {
-				this->drawArrow(
-					point(lastDrawing.x, lastDrawing.y),
-					point(
+				drawArrow(
+					ImVec2(lastDrawing.x, lastDrawing.y),
+					ImVec2(
 						lastDrawing.x + (force.power * (1 / this->forceScale) *
 										 std::cos(force.angle)),
 						lastDrawing.y + (force.power * (1 / this->forceScale) *
 										 std::sin(force.angle))),
-					list);
+					list, this->arrowLength, this->arrowAngle,
+					this->vectorThickness, this->forceColor);
 			}
 		}
 	}
@@ -309,11 +311,11 @@ void Gravity::reset() {
 	object object1, object2;
 
 	object1.mass = EARTH_MASS;
-	object1.position = point(0, 0);
+	object1.position = ImVec2(0, 0);
 	object1.radius = EARTH_RADIUS;
 
 	object2.mass = 1;
-	object2.position = point(0, EARTH_RADIUS * 2);
+	object2.position = ImVec2(0, EARTH_RADIUS * 2);
 	object2.radius = EARTH_RADIUS * 0.2;
 	object2.move.speedX =  // Orbital Speed for object1
 		std::sqrt(GRAVITY_G * object1.mass / (EARTH_RADIUS * 2));
@@ -332,7 +334,7 @@ Gravity::Force Gravity::object::resultantOfForces() {
 
 	Gravity::Force result;
 	result.power = std::sqrt(std::pow(x, 2) + std::pow(y, 2));
-	result.angle = angleBetweenPoints(point(0, 0), point(x, y));
+	result.angle = angleBetweenPoints(ImVec2(0, 0), ImVec2(x, y));
 	return result;
 }
 
@@ -350,46 +352,6 @@ Gravity::Force Gravity::calcGravityForce(const Gravity::object& o1,
 				   std::pow(o1.position.y - o2.position.y, 2));
 	force.angle = angleBetweenPoints(o1.position, o2.position);
 	return force;
-}
-
-float Gravity::angleBetweenPoints(const Gravity::point& from,
-								  const Gravity::point& to) {
-	double x = to.x - from.x;
-	double y = to.y - from.y;
-	double c = std::sqrt(std::pow(x, 2) + std::pow(y, 2));
-	float result = 0;
-
-	if (x * y == 0) {
-		result = (x != 0) ? std::acos(x / c) : std::asin(y / c);
-	} else {
-		result = std::asin(std::abs(y) / c);
-		if (y > 0) {
-			if (x < 0) result = M_PI - result;
-		} else {
-			if (x < 0) {
-				result += M_PI;
-			} else {
-				result = 2 * M_PI - result;
-			}
-		}
-	}
-	return result;
-}
-
-void Gravity::drawArrow(const Gravity::point& start, const Gravity::point& end,
-						ImDrawList* drawList) {
-	float angle = this->angleBetweenPoints(end, start);
-	float angleDiff = this->arrowAngle / 180 * M_PI / 2;
-	drawList->AddLine(ImVec2(start.x, start.y), ImVec2(end.x, end.y),
-					  this->forceColor, this->vectorThickness);
-	ImVec2 arrow[] = {
-		ImVec2(end.x + this->arrowLength * std::cos(angle + angleDiff),
-			   end.y + this->arrowLength * std::sin(angle + angleDiff)),
-		ImVec2(end.x, end.y),
-		ImVec2(end.x + this->arrowLength * std::cos(angle - angleDiff),
-			   end.y + this->arrowLength * std::sin(angle - angleDiff))};
-	drawList->AddPolyline((ImVec2*)&arrow, 3, this->forceColor, false,
-						  this->vectorThickness);
 }
 
 void Gravity::editObjectMenu(double& mass, float& radius, float& speedX,

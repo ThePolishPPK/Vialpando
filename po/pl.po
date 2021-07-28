@@ -100,3 +100,27 @@ msgstr "Kąt"
 
 msgid "Friction ratio"
 msgstr "Wspołczynnik tarcia"
+
+msgid "Force vector scale"
+msgstr "Skala wektorów siły"
+
+msgid "Distance"
+msgstr "Dystans"
+
+msgid "Move up"
+msgstr "Przenieś na górę"
+
+msgid "Gravity force"
+msgstr "Siła grawitacji"
+
+msgid "Friction force"
+msgstr "Siła tarcia"
+
+msgid "Slip force"
+msgstr "Siła równoległa do podłoża"
+
+msgid "Pressure force"
+msgstr "Siła nacisku"
+
+msgid "Ground reaction"
+msgstr "Siła reakcji podłoża"

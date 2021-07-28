@@ -35,14 +35,9 @@ class Gravity : public View {
 		float angle;   // In Radians, starting like unit circle
 		Force(double power = 0, float angle = 0) : power(power), angle(angle){};
 	};
-	struct point {
-		double x;
-		double y;
-		point(double x = 0, double y = 0) : x(x), y(y){};
-	};
 	class object {
 	   public:
-		point position;
+		ImVec2 position;
 		float radius;
 		double mass;
 		ImColor color = ImColor(255, 0, 0);
@@ -56,8 +51,6 @@ class Gravity : public View {
 	};
 	std::vector<object> objects;
 	Force calcGravityForce(const object& o1, const object& o2);
-	static float angleBetweenPoints(const point& from, const point& to);
-	void drawArrow(const point& start, const point& end, ImDrawList* drawList);
 	static void editObjectMenu(double& mass, float& radius, float& speedX,
 							   float& speedY);
 };

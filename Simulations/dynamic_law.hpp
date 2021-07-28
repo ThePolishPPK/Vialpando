@@ -16,6 +16,11 @@ class Dynamics : public View {
 	void drawInclinedPlane();
 	void drawCannon();
 	struct {
+		double lastRefresh;
+		float speed = 0.0f;
+		float timeScale = 1.0f;
+		float distance = 5.0f;
+		float forceScale = 1.0f;
 		float inclination = 30;	 // Degree <0, 50>
 		float position = 1.0f;	 // Position in range <0, 1>. 1 = Begin, 0 = End
 		float mass = 5.0f;		 // Mass of object in kg
