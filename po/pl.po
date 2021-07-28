@@ -85,3 +85,18 @@ msgstr "Kąt między strzałkami"
 
 msgid "Arrow length"
 msgstr "Długość strzałek"
+
+msgid "Skateboard"
+msgstr "Deskorolka"
+
+msgid "Inclined plane"
+msgstr "Równia pochyła"
+
+msgid "Cannon"
+msgstr "Działo"
+
+msgid "Angle"
+msgstr "Kąt"
+
+msgid "Friction ratio"
+msgstr "Wspołczynnik tarcia"
