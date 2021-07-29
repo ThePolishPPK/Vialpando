@@ -33,7 +33,9 @@ void Dynamics::draw() {
 	if (this->inclinedPlaneActive) {
 		ImGui::Begin(
 			(tr("Dynamic Laws") + " - " + tr("Inclined plane")).c_str(),
-			&this->inclinedPlaneActive, ImGuiWindowFlags_MenuBar);
+			&this->inclinedPlaneActive,
+			ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollbar |
+				ImGuiWindowFlags_NoScrollWithMouse);
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu(tr("Options").c_str())) {
 				ImGui::SetNextItemWidth(128);
@@ -101,7 +103,7 @@ void Dynamics::draw() {
 		}
 		this->i.lastRefresh = ImGui::GetTime();
 
-		ImGui::SetCursorPos(ImVec2(ImGui::GetWindowSize().x-200, 60));
+		ImGui::SetCursorPos(ImVec2(ImGui::GetWindowSize().x - 200, 60));
 
 		ImGui::Text((tr("Speed") + ": %.2fm/s\n" + tr("Gravity force") +
 					 ": %.1fN\n" + tr("Friction force") + ": %.1fN\n" +
@@ -111,6 +113,15 @@ void Dynamics::draw() {
 					this->i.speed, this->i.gravityForce, this->i.frictionForce,
 					this->i.slipForce, this->i.pressureForce,
 					this->i.pressureForce);
+
+		ImGui::SetCursorPos(ImVec2(0, 0));
+		ImGui::InvisibleButton("#inclinedPlane", ImGui::GetWindowSize());
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) &&
+			ImGui::IsItemFocused() && ImGui::IsItemActive()) {
+			ImVec2 delta = ImGui::GetIO().MouseDelta;
+			this->i.viewX += delta.x;
+			this->i.viewY += delta.y;
+		}
 
 		ImGui::End();
 	}
@@ -130,22 +141,26 @@ void Dynamics::drawInclinedPlane() {
 	ImVec2 wPos = ImGui::GetWindowPos();
 	ImVec2 wSize = ImGui::GetWindowSize();
 
-	ImVec2 p1(wPos.x + 10, wPos.y + wSize.y - 10),
-		p2(wPos.x + wSize.x - 10, p1.y);
+	if (ImGui::GetIO().MouseWheel != 0) {
+		this->i.scale *= 1 - (ImGui::GetIO().MouseWheel / 10);
+	}
+
+	ImVec2 p1(wPos.x + this->i.viewX,
+			  wPos.y + (wSize.y / this->i.scale) + this->i.viewY),
+		p2(p1.x + (wSize.x / this->i.scale), p1.y);
 	ImVec2 p3(p1.x,
 			  p1.y - this->heightOnSlope(this->i.inclination) * (p2.x - p1.x));
 
 	draw->AddTriangleFilled(p1, p2, p3, ImColor(0, 64, 255));  // Slope
 
-	float slopeAngle = (this->i.inclination / 180) * M_PI,
-		  w = wSize.x - (2 * 10), pos = 1 - this->i.position;
+	float slopeAngle = (this->i.inclination / 180) * M_PI, w = p2.x - p1.x,
+		  pos = 1 - this->i.position;
 
 	ImVec2 q1(p1.x + (pos * w),
-			  p1.y - this->i.position * w * std::tan(slopeAngle));
-	ImVec2 q2(p1.x + ((pos + 0.1) * w),
-			  p1.y - (this->i.position - 0.1) * w * std::tan(slopeAngle)),
-		q3(q2.x + std::tan(slopeAngle) * 50, q2.y - 50),
-		q4(q1.x + std::tan(slopeAngle) * 50, q1.y - 50);
+			  p1.y - this->i.position * w * std::tan(slopeAngle)),
+		diff(std::cos(slopeAngle) * 50, std::sin(slopeAngle) * 50);
+	ImVec2 q2(q1.x + diff.x, q1.y + diff.y), q3(q2.x + diff.y, q2.y - diff.x),
+		q4(q1.x + diff.y, q1.y - diff.x);
 
 	draw->AddQuadFilled(q1, q2, q3, q4, ImColor(255, 0, 0));  // Square on slope
 

@@ -17,13 +17,15 @@ class Dynamics : public View {
 	void drawCannon();
 	struct {
 		double lastRefresh;
-		float speed = 0.0f;
-		float timeScale = 1.0f;
-		float distance = 5.0f;
-		float forceScale = 1.0f;
-		float inclination = 30;	 // Degree <0, 50>
-		float position = 1.0f;	 // Position in range <0, 1>. 1 = Begin, 0 = End
-		float mass = 5.0f;		 // Mass of object in kg
+		float viewX, viewY, scale = 1.0f;
+		float squareSize = 50.0f;  // Size of one side
+		float speed = 0.0f;		   // Speed of square in m/s
+		float timeScale = 1.0f;	   // Time scaled by expr 1/timeScale
+		float distance = 5.0f;	   // Distance of plane in m.
+		float forceScale = 1.0f;   // Force vectors scaled by expr 1/forceScale
+		float inclination = 30;	   // Degree <0, 50>
+		float position = 1.0f;	// Position in range <0, 1>. 1 = Begin, 0 = End
+		float mass = 5.0f;		// Mass of object in kg
 		float frictionRatio =
 			0.2f;  // Friction between floor and object. frictionRatio >= 0
 		float gravity = 9.8;  // Force of gravity in meters per second square

@@ -117,7 +117,7 @@ msgid "Friction force"
 msgstr "Siła tarcia"
 
 msgid "Slip force"
-msgstr "Siła równoległa do podłoża"
+msgstr "Siła zjazdu"
 
 msgid "Pressure force"
 msgstr "Siła nacisku"
