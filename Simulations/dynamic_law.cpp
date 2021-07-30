@@ -129,6 +129,7 @@ void Dynamics::draw() {
 	if (this->cannonActive) {
 		ImGui::Begin((tr("Dynamic Laws") + " - " + tr("Cannon")).c_str(),
 					 &this->cannonActive);
+		this->drawCannonSimulation();
 		ImGui::End();
 	}
 }
@@ -188,7 +189,47 @@ void Dynamics::drawInclinedPlane() {
 	draw->PushClipRect(wPos, ImVec2(wPos.x + wSize.x, wPos.y + wSize.y));
 }
 
-void Dynamics::drawCannon() {}
+void Dynamics::drawCannonSimulation() {
+	ImVec2 wPos = ImGui::GetWindowPos(), wSize = ImGui::GetWindowSize();
+	static float a1 = M_PI / 3, a2 = -M_PI / 5;
+	ImGui::DragFloat("A1", &a1, 0.01);
+	ImGui::DragFloat("A2", &a2, 0.01);
+	this->drawCannon(ImVec2(wPos.x + 600, wPos.y + 600), a1, a2,
+					 20.0f);  // For tests only
+}
+
+ImVec2 Dynamics::drawCannon(const ImVec2& pos, const float& angle,
+							const float& aimAngle, const float& size) {
+	ImDrawList* draw = ImGui::GetWindowDrawList();
+	ImVec2 wheelDiff(std::sin(angle) * size * 2, std::cos(angle) * size * 2),
+		distanceDiff((size * 2) * std::cos(angle),
+					 (size * 2) * std::sin(angle)),
+		wheel1(pos.x - distanceDiff.x - wheelDiff.x,
+			   pos.y + distanceDiff.y - wheelDiff.y),
+		wheel2(pos.x + distanceDiff.x - wheelDiff.x,
+			   pos.y - distanceDiff.y - wheelDiff.y);
+	ImVec2 cc(pos.x - std::sin(angle) * 4 * size,
+			  pos.y - std::cos(angle) * 4 * size);
+
+	draw->AddCircleFilled(cc, size * 3, ImColor(125, 125, 125));
+	ImVec2 barrelDiff(std::sin(aimAngle) * size * 1.04,
+					  std::cos(aimAngle) * size * 1.04);
+	ImVec2 barrel[4] = {ImVec2(cc.x - barrelDiff.x, cc.y - barrelDiff.y),
+						ImVec2(cc.x + barrelDiff.x, cc.y + barrelDiff.y),
+						ImVec2(cc.x + barrelDiff.x + barrelDiff.y * 6,
+							   cc.y + barrelDiff.y - barrelDiff.x * 6),
+						ImVec2(cc.x - barrelDiff.x + barrelDiff.y * 6,
+							   cc.y - barrelDiff.y - barrelDiff.x * 6)};
+
+	draw->AddConvexPolyFilled(&barrel[0], 4, ImColor(125, 125, 125));
+
+	draw->AddCircleFilled(wheel1, size * 2, ImColor(185, 60, 0));
+	draw->AddCircleFilled(wheel2, size * 2, ImColor(185, 60, 0));
+
+	draw->PushClipRectFullScreen();
+	return ImVec2((barrel[2].x + barrel[3].x) / 2,
+				  (barrel[2].y + barrel[3].y) / 2);
+}
 
 float Dynamics::heightOnSlope(float angle, float pos) {
 	return std::tan((angle / 180) * M_PI) * pos;

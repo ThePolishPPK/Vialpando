@@ -14,7 +14,7 @@ class Dynamics : public View {
 	bool skateActive = false, inclinedPlaneActive = false, cannonActive = false;
 	void drawSkateboard();
 	void drawInclinedPlane();
-	void drawCannon();
+	void drawCannonSimulation();
 	struct {
 		double lastRefresh;
 		float viewX, viewY, scale = 1.0f;
@@ -37,6 +37,8 @@ class Dynamics : public View {
 	float heightOnSlope(
 		float angle,
 		float pos = 1.0f);	// Return ratio between slope heaight and length
+	ImVec2 drawCannon(const ImVec2& pos, const float& angle,
+					  const float& aimAngle, const float& size);
 };
 
 #endif
