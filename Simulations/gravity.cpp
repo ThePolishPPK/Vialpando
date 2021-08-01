@@ -324,28 +324,14 @@ void Gravity::reset() {
 	this->objects.push_back(object2);
 }
 
-Gravity::Force Gravity::object::resultantOfForces() {
-	double x, y = 0;
-
-	for (auto& force : this->forcesVector) {
-		y += std::sin(force.angle) * force.power;
-		x += std::cos(force.angle) * force.power;
-	}
-
-	Gravity::Force result;
-	result.power = std::sqrt(std::pow(x, 2) + std::pow(y, 2));
-	result.angle = angleBetweenPoints(ImVec2(0, 0), ImVec2(x, y));
-	return result;
-}
-
 void Gravity::object::simplify() {
-	Force force = this->resultantOfForces();
+	Force force = resultantOfForces(this->forcesVector);
 	this->forcesVector.clear();
 	this->forcesVector.push_back(force);
 }
 
-Gravity::Force Gravity::calcGravityForce(const Gravity::object& o1,
-										 const Gravity::object& o2) {
+Force Gravity::calcGravityForce(const Gravity::object& o1,
+								const Gravity::object& o2) {
 	Force force;
 	force.power = GRAVITY_G * o1.mass * o2.mass /
 				  (std::pow(o1.position.x - o2.position.x, 2) +

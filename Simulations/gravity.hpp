@@ -6,6 +6,7 @@
 #include <limits>
 #include <vector>
 
+#include "../basic.hpp"
 #include "../view.hpp"
 
 class Gravity : public View {
@@ -30,11 +31,6 @@ class Gravity : public View {
 	double lastMoveTime;
 	float timeSpeed;
 	void reset();
-	struct Force {
-		double power;  // In Newtons
-		float angle;   // In Radians, starting like unit circle
-		Force(double power = 0, float angle = 0) : power(power), angle(angle){};
-	};
 	class object {
 	   public:
 		ImVec2 position;
@@ -46,7 +42,6 @@ class Gravity : public View {
 			float speedY = 0;  // In m/s
 		} move;
 		std::vector<Force> forcesVector;
-		Force resultantOfForces();
 		void simplify();
 	};
 	std::vector<object> objects;

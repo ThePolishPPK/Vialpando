@@ -2,12 +2,15 @@
 
 #include <imgui.h>
 
+#include <algorithm>
+
 #include "../basic.hpp"
 #include "../translate.hpp"
 
 Dynamics::Dynamics() {
 	this->name = "Dynamic Laws";
 	this->keepActive = true;
+	this->io = &ImGui::GetIO();
 }
 
 void Dynamics::draw() {
@@ -21,8 +24,8 @@ void Dynamics::draw() {
 		ImGui::Checkbox(tr("Inclined plane").c_str(),
 						&this->inclinedPlaneActive);
 		ImGui::Checkbox(tr("Cannon").c_str(), &this->cannonActive);
-		ImGui::End();
 	}
+	ImGui::End();
 
 	if (this->skateActive) {
 		ImGui::Begin((tr("Dynamic Laws") + " - " + tr("Skateboard")).c_str(),
@@ -118,7 +121,7 @@ void Dynamics::draw() {
 		ImGui::InvisibleButton("#inclinedPlane", ImGui::GetWindowSize());
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) &&
 			ImGui::IsItemFocused() && ImGui::IsItemActive()) {
-			ImVec2 delta = ImGui::GetIO().MouseDelta;
+			ImVec2 delta = this->io->MouseDelta;
 			this->i.viewX += delta.x;
 			this->i.viewY += delta.y;
 		}
@@ -128,8 +131,26 @@ void Dynamics::draw() {
 
 	if (this->cannonActive) {
 		ImGui::Begin((tr("Dynamic Laws") + " - " + tr("Cannon")).c_str(),
-					 &this->cannonActive);
+					 &this->cannonActive, ImGuiWindowFlags_MenuBar);
 		this->drawCannonSimulation();
+		if (ImGui::BeginMenuBar()) {
+			if (ImGui::BeginMenu(tr("Options").c_str())) {
+				ImGui::DragFloat(tr("Cannon mass").c_str(), &this->c.mass, 1, 1,
+								 2048, "%.0f kg");
+				ImGui::DragFloat(tr("Bullet mass").c_str(),
+								 &this->c.currentBulletMass, 0.1, 0.1, 2048,
+								 "%.1f kg");
+				ImGui::DragFloat(tr("Bullet speed").c_str(),
+								 &this->c.currentBulletSpeed, 0.1, 0.1, 2048,
+								 "%.1f m/s");
+				ImGui::DragFloat(tr("Bullet radius").c_str(),
+								 &this->c.bulletSize, 0.01, 0.01, 64, "%.2f m");
+				ImGui::DragFloat(tr("Window scale").c_str(), &this->c.boxScale,
+								 0.1, 0.1, 1024, "%.1fpx = 1m");
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
 		ImGui::End();
 	}
 }
@@ -142,8 +163,8 @@ void Dynamics::drawInclinedPlane() {
 	ImVec2 wPos = ImGui::GetWindowPos();
 	ImVec2 wSize = ImGui::GetWindowSize();
 
-	if (ImGui::GetIO().MouseWheel != 0) {
-		this->i.scale *= 1 - (ImGui::GetIO().MouseWheel / 10);
+	if (this->io->MouseWheel != 0) {
+		this->i.scale *= 1 - (this->io->MouseWheel / 10);
 	}
 
 	ImVec2 p1(wPos.x + this->i.viewX,
@@ -191,19 +212,109 @@ void Dynamics::drawInclinedPlane() {
 
 void Dynamics::drawCannonSimulation() {
 	ImVec2 wPos = ImGui::GetWindowPos(), wSize = ImGui::GetWindowSize();
-	static float a1 = M_PI / 3, a2 = -M_PI / 5;
-	ImGui::DragFloat("A1", &a1, 0.01);
-	ImGui::DragFloat("A2", &a2, 0.01);
-	this->drawCannon(ImVec2(wPos.x + 600, wPos.y + 600), a1, a2,
-					 20.0f);  // For tests only
+	static ImDrawList* draw = ImGui::GetWindowDrawList();
+	ImGui::InvisibleButton("", ImVec2(250, 250));
+
+	for (auto& bullet : this->c.bullets) {
+		draw->AddCircleFilled(bullet.position,
+							  this->c.bulletSize * this->c.boxScale,
+							  ImColor(70, 70, 70));
+	}
+
+	ImVec2 barrelPos =
+		this->drawCannon(ImVec2(this->c.position.x * this->c.boxScale + wPos.x,
+								this->c.position.y * this->c.boxScale + wPos.y),
+						 this->c.rotate, this->c.barrelAngle,
+						 this->c.bulletSize * this->c.boxScale);
+
+	float delta = ImGui::GetTime() - this->c.lastUpdate;
+	if (delta <= 1) {
+		float padding = 3.5 * this->c.bulletSize * this->c.boxScale;
+		ImVec2 posLimitX(padding / this->c.boxScale,
+						 (wSize.x - padding) / this->c.boxScale),
+			posLimitY(2 * padding / this->c.boxScale,
+					  wSize.y / this->c.boxScale);
+		this->c.move.y -= this->c.gravity * delta;
+
+		this->c.move.x *= std::pow(this->c.moveOportunityInAir, delta);
+		this->c.move.y *= std::pow(this->c.moveOportunityInAir, delta);
+
+		this->c.position.x += this->c.move.x * delta;
+		this->c.position.y -= this->c.move.y * delta;
+
+		if (this->c.position.y >= posLimitY.y) {
+			this->c.move.x *= std::pow(this->c.moveOportunityOnGround, delta);
+		}
+
+		if (this->c.position.x < posLimitX.x ||
+			this->c.position.x > posLimitX.y) {
+			this->c.move.x = 0;
+			this->c.position.x =
+				(this->c.position.x < posLimitX.x) ? posLimitX.x : posLimitX.y;
+		}
+		if (this->c.position.y < posLimitY.x ||
+			this->c.position.y > posLimitY.y) {
+			this->c.move.y = 0;
+			this->c.position.y =
+				(this->c.position.y < posLimitY.x) ? posLimitY.x : posLimitY.y;
+		}
+
+		for (unsigned short bulletID = 0; bulletID < this->c.bullets.size();
+			 bulletID++) {
+			object& bullet = this->c.bullets[bulletID];
+			if (bullet.position.x < 0 || bullet.position.x > wSize.x ||
+				bullet.position.y < 0 || bullet.position.y > wSize.y) {
+				this->c.bullets.erase(this->c.bullets.begin() + bulletID);
+			}
+			bullet.move.y -= this->c.gravity * delta;
+			bullet.position.x += bullet.move.x * delta * this->c.boxScale;
+			bullet.position.y -= bullet.move.y * delta * this->c.boxScale;
+		}
+
+		if (ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_UpArrow))) {
+			this->c.barrelAngle += M_PI / 6 * delta;
+		}
+		if (ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_DownArrow))) {
+			this->c.barrelAngle -= M_PI / 6 * delta;
+		}
+		draw->PushClipRectFullScreen();
+	}
+	this->c.lastUpdate = ImGui::GetTime();
+
+	if (this->io->MouseDown[ImGuiMouseButton_Right] &&
+		ImGui::IsWindowFocused()) {
+		ImVec2& mPos = this->io->MousePos;
+		this->c.barrelAngle = -angleBetweenPoints(
+			this->c.position, ImVec2((mPos.x - wPos.x) / this->c.boxScale,
+									 (mPos.y - wPos.y) / this->c.boxScale));
+	}
+
+	if ((this->io->MouseReleased[ImGuiMouseButton_Left] ||
+		 ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_Tab)) ||
+		 ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space))) &&
+		ImGui::IsWindowFocused()) {
+		object bullet;
+		bullet.position = barrelPos;
+		bullet.mass = this->c.currentBulletMass;
+		bullet.move.x =
+			std::cos(this->c.barrelAngle) * this->c.currentBulletSpeed;
+		bullet.move.y =
+			std::sin(this->c.barrelAngle) * this->c.currentBulletSpeed;
+
+		float part = bullet.mass / this->c.mass;
+		this->c.move.x += -bullet.move.x * part;
+		this->c.move.y += -bullet.move.y * part;
+
+		this->c.bullets.push_back(bullet);
+	}
 }
 
 ImVec2 Dynamics::drawCannon(const ImVec2& pos, const float& angle,
 							const float& aimAngle, const float& size) {
 	ImDrawList* draw = ImGui::GetWindowDrawList();
 	ImVec2 wheelDiff(std::sin(angle) * size * 2, std::cos(angle) * size * 2),
-		distanceDiff((size * 2) * std::cos(angle),
-					 (size * 2) * std::sin(angle)),
+		distanceDiff((size * 2.5) * std::cos(angle),
+					 (size * 2.5) * std::sin(angle)),
 		wheel1(pos.x - distanceDiff.x - wheelDiff.x,
 			   pos.y + distanceDiff.y - wheelDiff.y),
 		wheel2(pos.x + distanceDiff.x - wheelDiff.x,
@@ -225,6 +336,9 @@ ImVec2 Dynamics::drawCannon(const ImVec2& pos, const float& angle,
 
 	draw->AddCircleFilled(wheel1, size * 2, ImColor(185, 60, 0));
 	draw->AddCircleFilled(wheel2, size * 2, ImColor(185, 60, 0));
+
+	ImVec2 out((barrel[2].x + barrel[3].x) / 2,
+			   (barrel[2].y + barrel[3].y) / 2);
 
 	draw->PushClipRectFullScreen();
 	return ImVec2((barrel[2].x + barrel[3].x) / 2,

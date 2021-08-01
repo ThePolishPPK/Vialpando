@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include <cmath>
+#include <vector>
 
 float angleBetweenPoints(const ImVec2& from, const ImVec2& to) {
 	double x = to.x - from.x;
@@ -41,4 +42,28 @@ void drawArrow(const ImVec2& start, const ImVec2& end, ImDrawList* drawList,
 		ImVec2(end.x + arrowLength * std::cos(angle - angleDiff),
 			   end.y + arrowLength * std::sin(angle - angleDiff))};
 	drawList->AddPolyline((ImVec2*)&arrow, 3, color, false, thickness);
+}
+
+Force resultantOfForces(const std::vector<Force>& forces) {
+	double x = 0, y = 0;
+
+	for (auto& force : forces) {
+		y += std::sin(force.angle) * force.power;
+		x += std::cos(force.angle) * force.power;
+	}
+
+	Force result;
+	if (x != 0 && y != 0) {
+		result.power = std::sqrt(std::pow(x, 2) + std::pow(y, 2));
+		result.angle = angleBetweenPoints(ImVec2(0, 0), ImVec2(x, y));
+	}
+	return result;
+}
+
+bool object::operator==(const object& obj) {
+	if (this->mass == obj.mass && this->position.x == obj.position.x &&
+		this->position.y == obj.position.y && this->move.x == obj.move.x &&
+		this->move.y == obj.move.y && this->rotate == obj.rotate)
+		return true;
+	return false;
 }

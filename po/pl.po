@@ -124,3 +124,18 @@ msgstr "Siła nacisku"
 
 msgid "Ground reaction"
 msgstr "Siła reakcji podłoża"
+
+msgid "Cannon mass"
+msgstr "Masa działa"
+
+msgid "Bullet mass"
+msgstr "Masa pocisku"
+
+msgid "Bullet speed"
+msgstr "Prędkość pocisku"
+
+msgid "Window scale"
+msgstr "Skala okna"
+
+msgid "Bullet radius"
+msgstr "Promień pocisku"

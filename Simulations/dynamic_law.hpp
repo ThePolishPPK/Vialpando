@@ -2,7 +2,9 @@
 #define DYNAMIC_LAWS_H
 
 #include <cmath>
+#include <vector>
 
+#include "../basic.hpp"
 #include "../view.hpp"
 
 class Dynamics : public View {
@@ -11,6 +13,7 @@ class Dynamics : public View {
 	void draw();
 
    private:
+	ImGuiIO* io;
 	bool skateActive = false, inclinedPlaneActive = false, cannonActive = false;
 	void drawSkateboard();
 	void drawInclinedPlane();
@@ -34,9 +37,28 @@ class Dynamics : public View {
 		float slipForce;	  // Force working on object to slip in Netwons
 		float pressureForce;  // Force working prependicuarly to flat
 	} i;
+	struct : object {
+		ImVec2 move = ImVec2(0, 0);
+		ImVec2 position = ImVec2(200, 200);
+		float mass = 40.0f;
+
+		float gravity = 9.8f;			   // Gravity force working on object
+		float currentBulletMass = 3.0f;	   // Mass of bullet with can be shoted
+		float currentBulletSpeed = 60.0f;  // Speed of bullet with can be shoted
+		float bulletSize = 0.30f;		   // Radius of bullet
+		float barrelAngle = 0.0f;  // Angle of barrel. Helps to calculate angle
+								   // of force after shot
+		float boxScale = 50.0f;	   // Scale of window. boxScale pixels = 1 meter
+		float moveOportunityInAir = 0.94f;
+		float moveOportunityOnGround = 0.8f;
+		float lastUpdate;		  // Time of last values update
+		float secureMode = true;  // Allows to set negative mass and speed
+
+		std::vector<object> bullets;  // List with all bullets
+	} c;
 	float heightOnSlope(
 		float angle,
-		float pos = 1.0f);	// Return ratio between slope heaight and length
+		float pos = 1.0f);	// Returns ratio between slope height and length
 	ImVec2 drawCannon(const ImVec2& pos, const float& angle,
 					  const float& aimAngle, const float& size);
 };
