@@ -14,7 +14,7 @@ class Dynamics : public View {
 
    private:
 	ImGuiIO* io;
-	bool skateActive = false, inclinedPlaneActive = false, cannonActive = false;
+	bool inclinedPlaneActive = false, cannonActive = false;
 	void drawSkateboard();
 	void drawInclinedPlane();
 	void drawCannonSimulation();
@@ -43,8 +43,8 @@ class Dynamics : public View {
 		float mass = 40.0f;
 
 		float gravity = 9.8f;			   // Gravity force working on object
-		float currentBulletMass = 3.0f;	   // Mass of bullet with can be shoted
-		float currentBulletSpeed = 60.0f;  // Speed of bullet with can be shoted
+		float currentBulletMass = 1.0f;	   // Mass of bullet with can be shoted
+		float currentBulletSpeed = 20.0f;  // Speed of bullet with can be shoted
 		float bulletSize = 0.30f;		   // Radius of bullet
 		float barrelAngle = 0.0f;  // Angle of barrel. Helps to calculate angle
 								   // of force after shot

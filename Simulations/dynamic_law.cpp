@@ -14,24 +14,13 @@ Dynamics::Dynamics() {
 }
 
 void Dynamics::draw() {
-	// 1 Deskorolka
-	// 2 Równia pochyła
-	// 3 Armata odpychająca kulę
-
 	if (ImGui::Begin(tr(this->name).c_str(), &this->keepActive,
 					 ImGuiWindowFlags_NoResize)) {
-		ImGui::Checkbox(tr("Skateboard").c_str(), &this->skateActive);
 		ImGui::Checkbox(tr("Inclined plane").c_str(),
 						&this->inclinedPlaneActive);
 		ImGui::Checkbox(tr("Cannon").c_str(), &this->cannonActive);
 	}
 	ImGui::End();
-
-	if (this->skateActive) {
-		ImGui::Begin((tr("Dynamic Laws") + " - " + tr("Skateboard")).c_str(),
-					 &this->skateActive);
-		ImGui::End();
-	}
 
 	if (this->inclinedPlaneActive) {
 		ImGui::Begin(
@@ -155,8 +144,6 @@ void Dynamics::draw() {
 	}
 }
 
-void Dynamics::drawSkateboard() {}
-
 void Dynamics::drawInclinedPlane() {
 	ImDrawList* draw = ImGui::GetWindowDrawList();
 
@@ -213,7 +200,15 @@ void Dynamics::drawInclinedPlane() {
 void Dynamics::drawCannonSimulation() {
 	ImVec2 wPos = ImGui::GetWindowPos(), wSize = ImGui::GetWindowSize();
 	static ImDrawList* draw = ImGui::GetWindowDrawList();
+	ImVec2 cursorPos = ImGui::GetCursorPos();
 	ImGui::InvisibleButton("", ImVec2(250, 250));
+	ImGui::SetCursorPos(ImVec2(wSize.x - 200, cursorPos.y));
+	ImGui::Text(
+		(tr("Cannon speed") + ": %.1fm/s\n" + tr("Bullet mass") + ": %.1fkg\n" +
+		 tr("Bullet speed") + ": %.1fm/s\n")
+			.c_str(),
+		std::sqrt(std::pow(this->c.move.x, 2) + std::pow(this->c.move.y, 2)),
+		this->c.currentBulletMass, this->c.currentBulletSpeed);
 
 	for (auto& bullet : this->c.bullets) {
 		draw->AddCircleFilled(bullet.position,

@@ -139,3 +139,6 @@ msgstr "Skala okna"
 
 msgid "Bullet radius"
 msgstr "Promień pocisku"
+
+msgid "Cannon speed"
+msgstr "Prędkość działa"
