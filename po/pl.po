@@ -142,3 +142,27 @@ msgstr "Promień pocisku"
 
 msgid "Cannon speed"
 msgstr "Prędkość działa"
+
+msgid "Work and energy"
+msgstr "Praca i energia"
+
+msgid "Displacement"
+msgstr "Przemieszczenie"
+
+msgid "Force"
+msgstr "Siła"
+
+msgid "Work"
+msgstr "Praca"
+
+msgid "Acceleration"
+msgstr "Przyśpieszenie"
+
+msgid "Coils"
+msgstr "Zwoje"
+
+msgid "Coils length"
+msgstr "Długość zwoji"
+
+msgid "Zero point"
+msgstr "Punkt zerowy"
