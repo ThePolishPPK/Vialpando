@@ -83,6 +83,7 @@ add_executable(${PROJECT_NAME}
 	translate.cpp
 	Simulations/gravity.cpp
 	Simulations/dynamic_law.cpp
+	Simulations/work_and_energy.cpp
 )
 
 add_library(ImGui_Allegro STATIC

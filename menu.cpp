@@ -9,6 +9,7 @@
 
 #include "Simulations/dynamic_law.hpp"
 #include "Simulations/gravity.hpp"
+#include "Simulations/work_and_energy.hpp"
 #include "translate.hpp"
 
 Menu::Menu(ImGuiIO& io) {
@@ -16,6 +17,7 @@ Menu::Menu(ImGuiIO& io) {
 	this->keepActive = true;
 	this->views.push_back(new Gravity());
 	this->views.push_back(new Dynamics());
+	this->views.push_back(new WorkAndEnergy());
 	processDicts();
 	setLanguage(std::string("pl"));
 }
