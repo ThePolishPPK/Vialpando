@@ -11,14 +11,15 @@ class WorkAndEnergy : public View {
 	void draw();
 
    private:
-	double lastUpdate = 0;		  // Last update time
-	float baseLength = 0.1;		  // Length of spring
-	float coilLength = 0.02;	  // Length of spring part
-	int coilsCount = 30;		  // Count of spring parts
-	float k = 0.2;				  // Elastic constant
-	float speed = 0;			  // Speed of spring. Relatively to x axis.
-	float position = baseLength;  // Position of spring end related to begin
-	float scale = 3000.0f;		  // scale pixels = 1 meter
+	double cycleStartTime = 0;
+	float baseLength = 0.1;	   // Length of spring
+	float coilLength = 0.02;   // Length of spring part
+	int coilsCount = 30;	   // Count of spring parts
+	float maxDX = baseLength;  // Maximum block displacement
+	float k = 0.2;			   // Elastic constant
+	float dx = 0;			   // Maximum block displacement of equilibrium
+	float position = 0;		   // Position of block, related to equilibrium
+	float scale = 3000.0f;	   // scale pixels = 1 meter
 	struct {
 		float x = 0;		  // Position x
 		float y = 0;		  // Position y
@@ -26,6 +27,8 @@ class WorkAndEnergy : public View {
 		float height = 0.03;  // Height of box
 		float mass = 0.1;	  // Mass of box
 	} pkg;
+
+	void resetSystem();
 };
 
 #endif
