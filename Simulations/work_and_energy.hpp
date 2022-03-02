@@ -16,10 +16,12 @@ class WorkAndEnergy : public View {
 	float coilLength = 0.02;   // Length of spring part
 	int coilsCount = 30;	   // Count of spring parts
 	float maxDX = baseLength;  // Maximum block displacement
-	float k = 0.2;			   // Elastic constant
-	float dx = 0;			   // Maximum block displacement of equilibrium
-	float position = 0;		   // Position of block, related to equilibrium
-	float scale = 3000.0f;	   // scale pixels = 1 meter
+	float maxDXLeft = 0;
+	float maxDXRight = 0;
+	float k = 0.2;			// Elastic constant
+	float dx = 0;			// Maximum block displacement of equilibrium
+	float position = 0;		// Position of block, related to equilibrium
+	float scale = 3000.0f;	// scale pixels = 1 meter
 	struct {
 		float x = 0;		  // Position x
 		float y = 0;		  // Position y

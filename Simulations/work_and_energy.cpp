@@ -14,6 +14,7 @@ WorkAndEnergy::WorkAndEnergy() {
 }
 
 void WorkAndEnergy::draw() {
+	// FIXME: Search segmentation fault reason
 	ImGui::Begin(tr(this->name).c_str(), &this->keepActive);
 
 	ImDrawList* draw = ImGui::GetWindowDrawList();
@@ -29,9 +30,7 @@ void WorkAndEnergy::draw() {
 	coilDiff.x *= this->scale;
 
 	ImVec2 coils[this->coilsCount + 1];
-	// FIXME: Repair coil positions coordinates generator, to keep layout
-	// structure.
-	coils[0] = ImVec2(wPos.x + baseCursorPos.x, wPos.y + baseCursorPos.y);
+	coils[0] = ImVec2(baseCursorPos.x, baseCursorPos.y + 20);
 
 	for (unsigned short coil = 0; coil < this->coilsCount; coil++) {
 		coils[coil + 1] =
@@ -91,7 +90,7 @@ void WorkAndEnergy::draw() {
 		speed = this->dx * frequency * sin(frequency * timeCycleDelta);
 	}
 
-	// Draw plot
+	// Update plot data
 	static unsigned char pos = 0;
 	static float plotDisplacement[256];
 	static double lastPlotUpdate = ImGui::GetTime();
@@ -101,18 +100,21 @@ void WorkAndEnergy::draw() {
 		lastPlotUpdate += 0.1;
 	}
 
-	// Info elements
+	// Draw force vector
 	drawArrow(pkgCenterPoint,
 			  ImVec2(pkgCenterPoint.x + force * this->scale, pkgCenterPoint.y),
 			  draw);
 
-	ImGui::SetCursorPos(ImVec2(0, coils[0].y + this->coilLength));
+	// Draw plot
+	ImGui::SetCursorPos(ImVec2(0, 120 + this->coilLength * this->scale));
 
-	ImGui::PlotLines(tr("Displacement").c_str(), &plotDisplacement[0], 256, 0,
-					 NULL, this->maxDX, -this->maxDX, ImVec2(0, 200));
+	ImGui::Text((tr("Displacement") + ":").c_str());
+	ImGui::PlotLines("", &plotDisplacement[0], 256, 0, NULL, this->maxDX,
+					 -this->maxDX, ImVec2(0, 200));
 
 	int cursorY = ImGui::GetCursorPosY(), cursorX = 350;
 
+	// Info elements
 	ImGui::Text(
 		(tr("Speed") + ":\t%f m/s\n" + tr("Acceleration") + ":\t%f m/s²\n" +
 		 tr("Force") + ":\t%f N\n" + tr("Displacement") + ":\t%f m\n")
@@ -123,25 +125,37 @@ void WorkAndEnergy::draw() {
 	ImGui::SetCursorPos(ImVec2(350, cursorY));
 	ImGui::SetNextItemWidth(100);
 	ImGui::SliderInt(tr("Coils").c_str(), &this->coilsCount, 1, 256);
+
 	ImGui::SetCursorPosX(cursorX);
 	ImGui::SetNextItemWidth(100);
 	ImGui::DragFloat(
 		tr("Coils length").c_str(), &this->coilLength, 0.01, 0.001, 256,
 		"%.3f m", ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
+
 	ImGui::SetCursorPosX(cursorX);
 	ImGui::SetNextItemWidth(100);
 	ImGui::DragFloat(
 		tr("Mass").c_str(), &this->pkg.mass, 0.1, 0.01, 256, "%.2f kg",
 		ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
+
 	ImGui::SetCursorPosX(cursorX);
 	ImGui::SetNextItemWidth(100);
 	ImGui::DragFloat(
 		tr("Zero point").c_str(), &this->baseLength, 0.1, 0.01, 256, "%.2f m",
 		ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
 
+	ImGui::SetCursorPosX(cursorX);
+	ImGui::SetNextItemWidth(100);
+	ImGui::DragFloat(
+		tr("Elasticity coefficient").c_str(), &this->k, 0.1, 0.01, 8, "%.3f",
+		ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
+
 	// Catch block escape from system
-	if (fabsf(this->position) > this->maxDX) {
-		this->dx = this->maxDX;
+	if (this->position > this->maxDXRight) {
+		this->dx = this->maxDXRight;
+		resetSystem();
+	} else if (this->position < -this->maxDXLeft) {
+		this->dx = this->maxDXLeft;
 		resetSystem();
 	}
 
@@ -150,14 +164,15 @@ void WorkAndEnergy::draw() {
 }
 
 void WorkAndEnergy::resetSystem() {
-	// TODO: Refactor to reduce code and operations!
-	this->position = std::signbit(this->position) ? -this->dx : this->dx;
 	double frequency = 1 / sqrt(this->pkg.mass / this->k);
+	float angleSpeed = (2 * M_PI * frequency);
+
+	this->position = std::signbit(this->position) ? -this->dx : this->dx;
 	this->cycleStartTime = ImGui::GetTime();
 	this->cycleStartTime -=
-		(int)(this->cycleStartTime / (2 * M_PI * frequency)) *
-		(2 * M_PI * frequency);
-	this->cycleStartTime += std::signbit(this->position)
-								? M_PI / frequency / 2
-								: -M_PI / frequency / 2;
+		(int)(this->cycleStartTime / angleSpeed) * angleSpeed;
+	this->cycleStartTime +=
+		(std::signbit(this->position) ? M_PI : -M_PI) / frequency / 2;
+	this->maxDXLeft = this->baseLength;
+	this->maxDXRight = this->coilLength * this->coilsCount - this->baseLength;
 }

@@ -85,3 +85,87 @@ msgstr "Angle between arrow"
 
 msgid "Arrow length"
 msgstr "Arrow length"
+
+msgid "Skateboard"
+msgstr "Skateboard"
+
+msgid "Inclined plane"
+msgstr "Inclined plane"
+
+msgid "Cannon"
+msgstr "Cannon"
+
+msgid "Angle"
+msgstr "Angle"
+
+msgid "Friction ratio"
+msgstr "Friction ratio"
+
+msgid "Force vector scale"
+msgstr "Force vector scale"
+
+msgid "Distance"
+msgstr "Distance"
+
+msgid "Move up"
+msgstr "Move up"
+
+msgid "Gravity force"
+msgstr "Gravity force"
+
+msgid "Friction force"
+msgstr "Friction force"
+
+msgid "Slip force"
+msgstr "Slip force"
+
+msgid "Pressure force"
+msgstr "Pressure force"
+
+msgid "Ground reaction"
+msgstr "Ground reaction"
+
+msgid "Cannon mass"
+msgstr "Cannon mass"
+
+msgid "Bullet mass"
+msgstr "Bullet mass"
+
+msgid "Bullet speed"
+msgstr "Bullet speed"
+
+msgid "Window scale"
+msgstr "Window scale"
+
+msgid "Bullet radius"
+msgstr "Bullet radius"
+
+msgid "Cannon speed"
+msgstr "Cannon speed"
+
+msgid "Work and energy"
+msgstr "Work and energy"
+
+msgid "Displacement"
+msgstr "Displacement"
+
+msgid "Force"
+msgstr "Force"
+
+msgid "Work"
+msgstr "Work"
+
+msgid "Acceleration"
+msgstr "Acceleration"
+
+msgid "Coils"
+msgstr "Coils"
+
+msgid "Coils length"
+msgstr "Coils length"
+
+msgid "Zero point"
+msgstr "Zero point"
+
+msgid "Elasticity coefficient"
+msgstr "Elasticity coefficient"

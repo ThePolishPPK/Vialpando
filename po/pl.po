@@ -99,7 +99,7 @@ msgid "Angle"
 msgstr "Kąt"
 
 msgid "Friction ratio"
-msgstr "Wspołczynnik tarcia"
+msgstr "Współczynnik tarcia"
 
 msgid "Force vector scale"
 msgstr "Skala wektorów siły"
@@ -166,3 +166,6 @@ msgstr "Długość zwoji"
 
 msgid "Zero point"
 msgstr "Punkt zerowy"
+
+msgid "Elasticity coefficient"
+msgstr "Współczynnik sprężystości"
