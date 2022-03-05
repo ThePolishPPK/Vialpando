@@ -5,6 +5,10 @@
 #include <cmath>
 #include <vector>
 
+float distanceBetweenPoints(const ImVec2& from, const ImVec2& to) {
+	return std::sqrt(std::pow(from.x - to.x, 2) + std::pow(from.y - to.y, 2));
+}
+
 float angleBetweenPoints(const ImVec2& from, const ImVec2& to) {
 	double x = to.x - from.x;
 	double y = to.y - from.y;
@@ -44,6 +48,17 @@ void drawArrow(const ImVec2& start, const ImVec2& end, ImDrawList* drawList,
 	drawList->AddPolyline((ImVec2*)&arrow, 3, color, false, thickness);
 }
 
+void drawNeedle(const ImVec2& point, ImDrawList* drawList, float length,
+				float angle, ImColor color) {
+	float angleInRad = angle / 180 * M_PI;
+	ImVec2 posDiff = ImVec2(std::cos(angleInRad) * length / 2,
+							std::sin(angleInRad) * length / 2);
+
+	drawArrow(ImVec2(point.x + posDiff.x, point.y + posDiff.y),
+			  ImVec2(point.x - posDiff.x, point.y - posDiff.y), drawList, 10.0f,
+			  40.0f, 1.0f, color);
+}
+
 Force resultantOfForces(const std::vector<Force>& forces) {
 	double x = 0, y = 0;
 
@@ -63,7 +78,8 @@ Force resultantOfForces(const std::vector<Force>& forces) {
 bool object::operator==(const object& obj) {
 	if (this->mass == obj.mass && this->position.x == obj.position.x &&
 		this->position.y == obj.position.y && this->move.x == obj.move.x &&
-		this->move.y == obj.move.y && this->rotate == obj.rotate)
+		this->move.y == obj.move.y && this->rotate == obj.rotate &&
+		this->charge == obj.charge)
 		return true;
 	return false;
 }

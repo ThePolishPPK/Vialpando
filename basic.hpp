@@ -5,13 +5,16 @@
 
 #include <vector>
 
+float distanceBetweenPoints(const ImVec2& from, const ImVec2& to);
 float angleBetweenPoints(const ImVec2& from, const ImVec2& to);
 void drawArrow(const ImVec2& start, const ImVec2& end, ImDrawList* drawList,
 			   float arrowLength = 10.0f, float arrowAngle = 30.0f,
 			   float thickness = 3.0f, ImColor color = ImColor(255, 255, 255));
+void drawNeedle(const ImVec2& point, ImDrawList* drawList, float length,
+				float angle, ImColor color = ImColor(0, 0, 255));
 
 struct Force {
-	double power = 0;	 // In Newtons
+	double power = 0;
 	float angle = 0.0f;	 // In Radians, starting like unit circle
 	Force(double power = 0, float angle = 0) : power(power), angle(angle){};
 };
@@ -22,6 +25,7 @@ struct object {
 	ImVec2 move = ImVec2(0.0f, 0.0f);
 	float mass = 1.0f;
 	float rotate = 0.0f;
+	float charge = 0.0f;  // In Columbs
 	std::vector<Force> forces;
 	bool operator==(const object& obj);
 };

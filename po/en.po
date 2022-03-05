@@ -169,3 +169,27 @@ msgstr "Zero point"
 
 msgid "Elasticity coefficient"
 msgstr "Elasticity coefficient"
+
+msgid "Electric field"
+msgstr "Electric field"
+
+msgid "Electric charge field needle"
+msgstr "Electric charge field needle"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Charge"
+msgstr "Charge"
+
+msgid "Remove"
+msgstr "Remove"
+
+msgid "Density of needles"
+msgstr "Density of needles"
+
+msgid "Object size"
+msgstr "Object size"
+
+msgid "Arrow size"
+msgstr "Arrow size"

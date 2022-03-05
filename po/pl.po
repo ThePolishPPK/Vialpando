@@ -169,3 +169,27 @@ msgstr "Punkt zerowy"
 
 msgid "Elasticity coefficient"
 msgstr "Współczynnik sprężystości"
+
+msgid "Electric field"
+msgstr "Pole elektryczne"
+
+msgid "Electric charge field needle"
+msgstr "Igły pola elektrycznego"
+
+msgid "Close"
+msgstr "Zamknij"
+
+msgid "Charge"
+msgstr "Ładunek"
+
+msgid "Remove"
+msgstr "Usuń"
+
+msgid "Density of needles"
+msgstr "Gęstość igieł"
+
+msgid "Object size"
+msgstr "Rozmiar obiektu"
+
+msgid "Arrow size"
+msgstr "Rozmiar strzałki"
