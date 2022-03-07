@@ -193,3 +193,6 @@ msgstr "Rozmiar obiektu"
 
 msgid "Arrow size"
 msgstr "Rozmiar strzałki"
+
+msgid "Electric pendulum"
+msgstr "Wahadło elektryczne"

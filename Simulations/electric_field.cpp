@@ -15,8 +15,11 @@ void ElectricField::draw() {
 	ImGui::Text(tr("Available simulations").c_str());
 	ImGui::Checkbox(tr("Electric charge field needle").c_str(),
 					&isElectroMagneticNeedlesActive);
+	ImGui::Checkbox(tr("Electric pendulum").c_str(),
+					&isElectroMagneticPendulumActive);
 
 	ImGui::End();
 
 	if (isElectroMagneticNeedlesActive) drawElectroMagneticNeedles();
+	if (isElectroMagneticPendulumActive) drawElectroMagneticPendulum();
 }

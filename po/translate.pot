@@ -193,3 +193,6 @@ msgstr ""
 
 msgid "Arrow size"
 msgstr ""
+
+msgid "Electric pendulum"
+msgstr ""

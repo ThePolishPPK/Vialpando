@@ -20,6 +20,9 @@ class ElectricField : public View {
 	void drawElectroMagneticNeedles();
 	bool isElectroMagneticNeedlesActive = false;
 
+	void drawElectroMagneticPendulum();
+	bool isElectroMagneticPendulumActive = false;
+
 	std::vector<Force> calcNeedleForces(const ImVec2 &location,
 										std::vector<object> &objects);
 };
