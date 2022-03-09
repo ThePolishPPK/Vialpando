@@ -2,6 +2,7 @@
 #include <../translate.hpp>
 #include <cmath>
 #include <vector>
+#include <algorithm>
 
 #include "electric_field.hpp"
 
@@ -22,20 +23,16 @@ void ElectricField::drawElectroMagneticPendulum() {
 	static vector<ballObject> objects;
 	static bool _oneTimeInitializationProcess = []() {
 		ballObject obj1;
-		obj1.neutralPosition = {0.2f, 0.4f};
+		obj1.neutralPosition = {0.2f, 0.3f};
 		obj1.mass = 1.0f;
-		obj1.charge = 3e-6f;
+		obj1.charge = 4e-6f;
 		obj1.radius = 0.04f;
 
 		ballObject obj2;
-		obj2.neutralPosition = {0.4f, 0.4f};
+		obj2.neutralPosition = {0.602f, 0.273f};
 		obj2.mass = 1.7f;
-		obj2.charge = -9e-6f;
+		obj2.charge = -5e-6f;
 		obj2.radius = 0.047f;
-
-		// FIXME: To remove – For tests only
-		obj1.angleOfLine = M_PI / 6;
-		obj2.angleOfLine = -M_PI / 6;
 
 		objects.push_back(obj1);
 		objects.push_back(obj2);
@@ -49,9 +46,51 @@ void ElectricField::drawElectroMagneticPendulum() {
 				 ImGuiWindowFlags_MenuBar);
 
 	// Get window info
+	if (ImGui::GetWindowSize().x < 10) ImGui::SetWindowSize({800, 500});
 	ImVec2 windowSize = ImGui::GetWindowSize();
 	ImVec2 windowPos = ImGui::GetWindowPos();
 	ImDrawList* drawL = ImGui::GetWindowDrawList();
+	ImVec2 mousePtr = ImGui::GetMousePos();
+	mousePtr.x -= windowPos.x;
+	mousePtr.x /= scaleX;
+	mousePtr.y -= windowPos.y;
+	mousePtr.y /= scaleY;
+
+	// Objects menu
+	static ballObject* menuObject = NULL;
+	if (ImGui::BeginPopupModal(
+			"ModifyObject", NULL,
+			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
+		if (menuObject == NULL) {
+			ballObject newObject;
+			newObject.neutralPosition = mousePtr;
+			objects.push_back(newObject);
+			menuObject = &objects.back();
+		}
+		ImGui::SetWindowSize({300, 120});
+		ImGui::Text((tr("Charge") + ":").c_str());
+		ImGui::InputFloat("", &(menuObject->charge), 1e-6f, 1.0f, "%.3e C");
+		if (ImGui::Button(tr("Remove").c_str())) {
+			auto iter = find(objects.begin(), objects.end(), *menuObject);
+			objects.erase(iter);
+			menuObject = NULL;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(tr("Close").c_str())) {
+			menuObject = NULL;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+	if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
+		for (auto& obj : objects) {
+			if (distanceBetweenPoints(obj.position, mousePtr) <= obj.radius) {
+				menuObject = &obj;
+			}
+		}
+		ImGui::OpenPopup("ModifyObject");
+	}
 
 	// Get objects position
 	for (auto& obj : objects) {
@@ -69,10 +108,24 @@ void ElectricField::drawElectroMagneticPendulum() {
 
 			float distance =
 				distanceBetweenPoints(obj1.position, obj2.position);
+
+			// Discharge and pendium reset
+			if (distance <= obj1.radius + obj2.radius) {
+				obj1.charge += obj2.charge;
+				obj1.charge /= 2;
+				obj2.charge = obj1.charge;
+
+				float pendium = obj1.mass * obj1.move.x + obj2.mass * obj2.move.x;
+				pendium /= 2;
+				obj1.move.x = pendium / obj1.mass;
+				obj2.move.x = pendium / obj2.mass;
+			}
+
 			float force =
 				this->k * obj1.charge * obj2.charge / pow(distance, 2);
 			float angle = atan((obj2.position.y - obj1.position.y) /
 							   (obj2.position.x - obj1.position.x));
+
 
 			if (obj1.position.x > obj2.position.x) {
 				angle = -1 / angle;
@@ -116,19 +169,27 @@ void ElectricField::drawElectroMagneticPendulum() {
 					  drawL);
 		}
 		obj.forces = {resultantOfForces(obj.forces)};
-		obj.forces.clear();
 	}
 
 	// Calculate displacement
-	// TODO: Add segment of calculating displacement and move
+	float timeDelta = ImGui::GetTime() - lastUpdate;
+	for (auto& obj : objects) {
+		auto& force = obj.forces.back();
+		obj.move.x += - force.power/obj.mass * cos(force.angle) * timeDelta;
+		obj.position.x -= obj.neutralPosition.x;
+		obj.position.x += obj.move.x * cos(obj.angleOfLine) * timeDelta;
+		obj.position.y = pow(obj.neutralPosition.y, 2) - pow(obj.position.x, 2);
+		if (obj.position.y <= 0 || abs(obj.position.x) > obj.neutralPosition.y) {
+			obj.position.x = (signbit(obj.position.x) ? -1 : 1) * obj.neutralPosition.y;
+			obj.position.y = 1e-10;
+			obj.move.x = 0;
+		} else obj.position.y = sqrt(obj.position.y);
+		obj.angleOfLine = atan2(obj.position.x, obj.position.y);
+		
+		obj.forces.clear();
+	}
+	lastUpdate += timeDelta;
 
-	// TODO: Add Menu to manage properties of balls
-
-	// TODO: Add mouse button functionality – Adding objects and faster access
-	// to edit menu for specifed objects
-
-	// Optional TODO: Discharge balls when touch – distance between centers
-	// lower than sum of radiuses
 
 	// Menu
 	if (ImGui::BeginMenuBar()) {

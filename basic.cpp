@@ -16,7 +16,9 @@ float angleBetweenPoints(const ImVec2& from, const ImVec2& to) {
 	float result = 0;
 
 	if (x * y == 0) {
-		result = (x != 0) ? std::acos(x / c) : std::asin(y / c);
+		if (x == 0 and y == 0) {
+			result = 0;
+		} else result = (x != 0) ? std::acos(x / c) : std::asin(y / c);
 	} else {
 		result = std::asin(std::abs(y) / c);
 		if (y > 0) {
