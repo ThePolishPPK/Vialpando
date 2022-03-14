@@ -4,6 +4,9 @@ msgstr "Menu"
 msgid "Available simulations"
 msgstr "Available simulations"
 
+msgid "Languages"
+msgstr "Languages"
+
 msgid "Gravity"
 msgstr "Gravity"
 
@@ -196,3 +199,21 @@ msgstr "Arrow size"
 
 msgid "Electric pendulum"
 msgstr "Electric pendulum"
+
+msgid "Optics"
+msgstr "Optics"
+
+msgid "Height"
+msgstr "Height"
+
+msgid "Principal focus"
+msgstr "Principal focus"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Biconvex"
+msgstr "Biconvex"
+
+msgid "Biconcave"
+msgstr "Biconcave"

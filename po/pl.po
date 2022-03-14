@@ -4,6 +4,9 @@ msgstr "Menu"
 msgid "Available simulations"
 msgstr "Dostępne symulacje"
 
+msgid "Languages"
+msgstr "Języki"
+
 msgid "Gravity"
 msgstr "Grawitacja"
 
@@ -196,3 +199,21 @@ msgstr "Rozmiar strzałki"
 
 msgid "Electric pendulum"
 msgstr "Wahadło elektryczne"
+
+msgid "Optics"
+msgstr "Optyka"
+
+msgid "Height"
+msgstr "Wysokość"
+
+msgid "Principal focus"
+msgstr "Ogniskowa"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Biconvex"
+msgstr "Skupiająca"
+
+msgid "Biconcave"
+msgstr "Rozpraszająca"

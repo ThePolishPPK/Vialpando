@@ -4,6 +4,9 @@ msgstr ""
 msgid "Available simulations"
 msgstr ""
 
+msgid "Languages"
+msgstr ""
+
 msgid "Gravity"
 msgstr ""
 
@@ -195,4 +198,22 @@ msgid "Arrow size"
 msgstr ""
 
 msgid "Electric pendulum"
+msgstr ""
+
+msgid "Optics"
+msgstr ""
+
+msgid "Height"
+msgstr ""
+
+msgid "Principal focus"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Biconvex"
+msgstr ""
+
+msgid "Biconcave"
 msgstr ""

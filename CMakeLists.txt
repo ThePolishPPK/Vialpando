@@ -28,6 +28,7 @@ add_executable(${PROJECT_NAME}
 	Simulations/electric_field.cpp
 	Simulations/electric_field_needle.cpp
 	Simulations/electric_field_pendulum.cpp
+	Simulations/optics.cpp
 )
 
 add_library(ImGui_Allegro STATIC
