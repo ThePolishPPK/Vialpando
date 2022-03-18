@@ -17,12 +17,23 @@ Optics::Optics() {
 void Optics::draw() {
 	static float scale = 1000.0f;  // scale px = 1m
 	static vector<Lens> lens;
+	static vector<Ray> rays;
 	static bool _onlyOnceExecutedScript = []() {
 		Lens l1;
 		l1.position = {0.3f, 0.2f};
 		l1.type = Lens::Type::biconvex;
 
+		Ray r1, r2, r3, r4;
+		r1.points.push_back({0.05f, 0.15f});
+		r2.points.push_back({0.05f, 0.16f});
+		r3.points.push_back({0.05f, 0.17f});
+		r4.points.push_back({0.05f, 0.18f});
+
 		lens.push_back(l1);
+		rays.push_back(r1);
+		rays.push_back(r2);
+		rays.push_back(r3);
+		rays.push_back(r4);
 		return true;
 	}();
 
@@ -59,7 +70,7 @@ void Optics::draw() {
 			   pointDiff = {
 				   l.principalFocus * cos(l.angle - ((float)M_PI / 2)),
 				   l.principalFocus * sin(l.angle - ((float)M_PI / 2))};
-		// TODO: Draw this better using principal focus
+
 		for (auto& x : {begin, end})
 			drawArrow(center, x, draw, 10.0f,
 					  (l.type == Lens::Type::biconvex
@@ -70,6 +81,78 @@ void Optics::draw() {
 			draw->AddCircleFilled(ImVec2{pointDiff.x * scale * x + center.x,
 										 pointDiff.y * scale * x + center.y},
 								  5.0f, ImColor(255, 0, 0));
+	}
+
+	// Calculate Rays
+	for (auto& r : rays) {
+		for (auto& l : lens) {
+			ImVec2& p = r.points.back();
+			r._angle = fmodf(r._angle + 2 * M_PI, 2 * M_PI);
+			float lensAngles[2] = {angleBetweenPoints(p, l.begin),
+								   angleBetweenPoints(p, l.end)};
+			float max = std::max(lensAngles[0], lensAngles[1]),
+				  min = std::min(lensAngles[0], lensAngles[1]);
+
+			{  // FIXME: For debug only section
+				// Draw limit lines
+				draw->AddLine(
+					{p.x * scale + windowPos.x, p.y * scale + windowPos.y},
+					{(p.x + cos(max) * 10) * scale + windowPos.x,
+					 (p.y + sin(max) * 10) * scale + windowPos.y},
+					ImColor(0, 200, 0), 3);
+
+				draw->AddLine(
+					{p.x * scale + windowPos.x, p.y * scale + windowPos.y},
+					{(p.x + cos(min) * 10) * scale + windowPos.x,
+					 (p.y + sin(min) * 10) * scale + windowPos.y},
+					ImColor(0, 0, 200), 3);
+
+				draw->AddLine(
+					{p.x * scale + windowPos.x, p.y * scale + windowPos.y},
+					{(p.x + cos(r._angle) * 10) * scale + windowPos.x,
+					 (p.y + sin(r._angle) * 10) * scale + windowPos.y},
+					ImColor(200, 0, 0), 3);
+				ImGui::Text("Kąty:\n\tMax: %f\n\tMin: %f\n\tGet: %f\n\n", max,
+							min, r._angle);
+			}
+
+			// Checks ray hit lens and update informations
+			if ((max - min < M_PI && r._angle < max && r._angle > min) ||
+				(max - min > M_PI && (r._angle < min || r._angle > max))) {
+				ImVec2 hitPoint = l.position;
+
+				float d = -sin(angleBetweenPoints(p, l.position) - r._angle) *
+						  distanceBetweenPoints(p, l.position) /
+						  sin(r._angle - l.angle);
+				hitPoint.x -= cos(l.angle) * d;
+				hitPoint.y -= sin(l.angle) * d;
+				r.points.push_back(hitPoint);
+				// Angle calculation process from:
+				// https://physics.stackexchange.com/questions/690925/what-is-the-angle-of-a-ray-passing-through-a-thin-lens
+				if (l.type == Lens::Type::biconvex)
+					r._angle = atan(tan(M_PI / 2 - l.angle + r._angle) +
+									(d / l.principalFocus)) +
+							   r._angle;
+				if (l.type == Lens::Type::biconcave) {
+				}  // TODO: Add calculating angle of ray crossing biconcave lens
+			}
+		}
+		ImVec2 re = r.points.back();
+		re.x += cos(r._angle) * 10;
+		re.y += sin(r._angle) * 10;
+		r.points.push_back(re);
+		r._angle = 0;
+	}
+
+	// Draw rays
+	for (auto& r : rays) {
+		for (auto& p : r.points) {
+			draw->PathLineTo(
+				ImVec2(p.x * scale + windowPos.x, p.y * scale + windowPos.y));
+		}
+		draw->PathStroke(ImColor(255, 255, 0), 0, 3);
+		ImVec2 copy = r.points.front();
+		r.points = {copy};
 	}
 
 	// TODO: Use DRY roule for next three code sections
@@ -138,6 +221,7 @@ void Optics::draw() {
 			float distance = distanceBetweenPoints(l.position, mousePos);
 			if (distance * scale < 30) {
 				l.angle += (float)M_PI / 64 * IO.MouseWheel;
+				l.angle = fmodf(l.angle, M_PI);
 			}
 		}
 	}

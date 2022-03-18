@@ -4,6 +4,7 @@
 #include <imgui.h>
 
 #include <cmath>
+#include <vector>
 
 #include "../basic.hpp"
 #include "../view.hpp"
@@ -26,6 +27,11 @@ struct Lens {
 				this->principalFocus == l.principalFocus &&
 				this->type == l.type);
 	}
+};
+
+struct Ray {
+	std::vector<ImVec2> points;
+	float _angle = 0;  // Circle unit angle in radians for calculations only.
 };
 
 class Optics : public View {
