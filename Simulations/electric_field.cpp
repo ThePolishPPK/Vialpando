@@ -12,7 +12,7 @@ ElectricField::ElectricField() {
 void ElectricField::draw() {
 	ImGui::Begin(tr(name).c_str(), &keepActive);
 	// Menu
-	ImGui::Text(tr("Available simulations").c_str());
+	ImGui::Text("%s", tr("Available simulations").c_str());
 	ImGui::Checkbox(tr("Electric charge field needle").c_str(),
 					&isElectroMagneticNeedlesActive);
 	ImGui::Checkbox(tr("Electric pendulum").c_str(),

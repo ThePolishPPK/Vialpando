@@ -1,8 +1,8 @@
 #include <../basic.hpp>
 #include <../translate.hpp>
+#include <algorithm>
 #include <cmath>
 #include <vector>
-#include <algorithm>
 
 #include "electric_field.hpp"
 
@@ -68,7 +68,7 @@ void ElectricField::drawElectroMagneticPendulum() {
 			menuObject = &objects.back();
 		}
 		ImGui::SetWindowSize({300, 120});
-		ImGui::Text((tr("Charge") + ":").c_str());
+		ImGui::Text("%s:", tr("Charge").c_str());
 		ImGui::InputFloat("", &(menuObject->charge), 1e-6f, 1.0f, "%.3e C");
 		if (ImGui::Button(tr("Remove").c_str())) {
 			auto iter = find(objects.begin(), objects.end(), *menuObject);
@@ -115,7 +115,8 @@ void ElectricField::drawElectroMagneticPendulum() {
 				obj1.charge /= 2;
 				obj2.charge = obj1.charge;
 
-				float pendium = obj1.mass * obj1.move.x + obj2.mass * obj2.move.x;
+				float pendium =
+					obj1.mass * obj1.move.x + obj2.mass * obj2.move.x;
 				pendium /= 2;
 				obj1.move.x = pendium / obj1.mass;
 				obj2.move.x = pendium / obj2.mass;
@@ -126,13 +127,12 @@ void ElectricField::drawElectroMagneticPendulum() {
 			float angle = atan((obj2.position.y - obj1.position.y) /
 							   (obj2.position.x - obj1.position.x));
 
-
 			if (obj1.position.x > obj2.position.x) {
 				angle = -1 / angle;
 			}
 
 			obj1.forces.push_back(Force(force, angle));
-			obj2.forces.push_back(Force(force, angle+M_PI));
+			obj2.forces.push_back(Force(force, angle + M_PI));
 		}
 		// Gravity as two parts
 		obj1.forces.push_back(
@@ -168,28 +168,27 @@ void ElectricField::drawElectroMagneticPendulum() {
 							 basePos.y - f.power * sin(f.angle) * scaleForce),
 					  drawL);
 		}
-		obj.forces = {resultantOfForces(obj.forces)};
+		Force res = resultantOfForces(obj.forces);
+		obj.forces = {res};
 	}
 
 	// Calculate displacement
 	float timeDelta = ImGui::GetTime() - lastUpdate;
 	for (auto& obj : objects) {
 		auto& force = obj.forces.back();
-		obj.move.x += - force.power/obj.mass * cos(force.angle) * timeDelta;
+		obj.move.x += -force.power / obj.mass * cos(force.angle) * timeDelta;
 		obj.position.x -= obj.neutralPosition.x;
 		obj.position.x += obj.move.x * cos(obj.angleOfLine) * timeDelta;
-		obj.position.y = pow(obj.neutralPosition.y, 2) - pow(obj.position.x, 2);
-		if (obj.position.y <= 0 || abs(obj.position.x) > obj.neutralPosition.y) {
-			obj.position.x = (signbit(obj.position.x) ? -1 : 1) * obj.neutralPosition.y;
-			obj.position.y = 1e-10;
+		if (obj.position.x > obj.neutralPosition.y) {
+			obj.position.x =
+				(signbit(obj.position.x) ? -1 : 1) * obj.neutralPosition.y;
 			obj.move.x = 0;
-		} else obj.position.y = sqrt(obj.position.y);
-		obj.angleOfLine = atan2(obj.position.x, obj.position.y);
-		
+		}
+		obj.angleOfLine = asin(obj.position.x / obj.neutralPosition.y);
+
 		obj.forces.clear();
 	}
 	lastUpdate += timeDelta;
-
 
 	// Menu
 	if (ImGui::BeginMenuBar()) {

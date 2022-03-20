@@ -108,18 +108,17 @@ void WorkAndEnergy::draw() {
 	// Draw plot
 	ImGui::SetCursorPos(ImVec2(0, 120 + this->coilLength * this->scale));
 
-	ImGui::Text((tr("Displacement") + ":").c_str());
+	ImGui::Text("%s:", tr("Displacement").c_str());
 	ImGui::PlotLines("", &plotDisplacement[0], 256, 0, NULL, this->maxDX,
 					 -this->maxDX, ImVec2(0, 200));
 
 	int cursorY = ImGui::GetCursorPosY(), cursorX = 350;
 
 	// Info elements
-	ImGui::Text(
-		(tr("Speed") + ":\t%f m/s\n" + tr("Acceleration") + ":\t%f m/s²\n" +
-		 tr("Force") + ":\t%f N\n" + tr("Displacement") + ":\t%f m\n")
-			.c_str(),
-		speed, acceleration, force, this->position);
+	ImGui::Text("%s:\t%f m/s\n%s:\t%f m/s²\n%s:\t%f N\n%s:\t%f m\n",
+				tr("Speed").c_str(), speed, tr("Acceleration").c_str(),
+				acceleration, tr("Force").c_str(), force,
+				tr("Displacement").c_str(), this->position);
 
 	// Settings widgets
 	ImGui::SetCursorPos(ImVec2(350, cursorY));

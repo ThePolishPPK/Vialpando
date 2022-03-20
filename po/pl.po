@@ -13,7 +13,6 @@ msgstr "Grawitacja"
 msgid "Dynamic Laws"
 msgstr "Zasady dynamiki"
 
-
 msgid "Options"
 msgstr "Opcje"
 
@@ -217,3 +216,9 @@ msgstr "Skupiająca"
 
 msgid "Biconcave"
 msgstr "Rozpraszająca"
+
+msgid "Rays count"
+msgstr "Ilość promieni"
+
+msgid "Rays gap"
+msgstr "Odstęp promieni"

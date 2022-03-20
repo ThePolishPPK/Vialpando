@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include <algorithm>
+#include <tuple>
 #include <vector>
 
 #include "../translate.hpp"
@@ -18,26 +19,19 @@ void Optics::draw() {
 	static float scale = 1000.0f;  // scale px = 1m
 	static vector<Lens> lens;
 	static vector<Ray> rays;
+	static uint8_t raysCount = 4;
+	static float raysGap = 0.05f;
 	static bool _onlyOnceExecutedScript = []() {
 		Lens l1;
-		l1.position = {0.3f, 0.2f};
+		l1.position = {0.3f, 0.325f};
 		l1.type = Lens::Type::biconvex;
 
-		Ray r1, r2, r3, r4;
-		r1.points.push_back({0.05f, 0.15f});
-		r2.points.push_back({0.05f, 0.16f});
-		r3.points.push_back({0.05f, 0.17f});
-		r4.points.push_back({0.05f, 0.18f});
-
 		lens.push_back(l1);
-		rays.push_back(r1);
-		rays.push_back(r2);
-		rays.push_back(r3);
-		rays.push_back(r4);
 		return true;
 	}();
 
-	ImGui::Begin(tr(this->name).c_str(), &this->keepActive);
+	ImGui::Begin(tr(this->name).c_str(), &this->keepActive,
+				 ImGuiWindowFlags_MenuBar);
 
 	// Window info
 	ImVec2 windowSize = ImGui::GetWindowSize();
@@ -50,6 +44,14 @@ void Optics::draw() {
 	mousePos.x /= scale;
 	mousePos.y -= windowPos.y;
 	mousePos.y /= scale;
+
+	// Add rays
+	rays.clear();
+	for (uint8_t i = 0; i < raysCount; i++) {
+		Ray r;
+		r.points.push_back({0.05f, 0.25f + raysGap * i});
+		rays.push_back(r);
+	}
 
 	// Calculate lens points
 	for (auto& l : lens) {
@@ -85,36 +87,15 @@ void Optics::draw() {
 
 	// Calculate Rays
 	for (auto& r : rays) {
-		for (auto& l : lens) {
+		tuple<int8_t, ImVec2, float, float> closest = {-1, {0, 0}, 0, 0};
+		for (int8_t current = 0; current < lens.size(); current++) {
+			Lens& l = lens[current];
 			ImVec2& p = r.points.back();
 			r._angle = fmodf(r._angle + 2 * M_PI, 2 * M_PI);
 			float lensAngles[2] = {angleBetweenPoints(p, l.begin),
 								   angleBetweenPoints(p, l.end)};
 			float max = std::max(lensAngles[0], lensAngles[1]),
 				  min = std::min(lensAngles[0], lensAngles[1]);
-
-			{  // FIXME: For debug only section
-				// Draw limit lines
-				draw->AddLine(
-					{p.x * scale + windowPos.x, p.y * scale + windowPos.y},
-					{(p.x + cos(max) * 10) * scale + windowPos.x,
-					 (p.y + sin(max) * 10) * scale + windowPos.y},
-					ImColor(0, 200, 0), 3);
-
-				draw->AddLine(
-					{p.x * scale + windowPos.x, p.y * scale + windowPos.y},
-					{(p.x + cos(min) * 10) * scale + windowPos.x,
-					 (p.y + sin(min) * 10) * scale + windowPos.y},
-					ImColor(0, 0, 200), 3);
-
-				draw->AddLine(
-					{p.x * scale + windowPos.x, p.y * scale + windowPos.y},
-					{(p.x + cos(r._angle) * 10) * scale + windowPos.x,
-					 (p.y + sin(r._angle) * 10) * scale + windowPos.y},
-					ImColor(200, 0, 0), 3);
-				ImGui::Text("Kąty:\n\tMax: %f\n\tMin: %f\n\tGet: %f\n\n", max,
-							min, r._angle);
-			}
 
 			// Checks ray hit lens and update informations
 			if ((max - min < M_PI && r._angle < max && r._angle > min) ||
@@ -126,15 +107,32 @@ void Optics::draw() {
 						  sin(r._angle - l.angle);
 				hitPoint.x -= cos(l.angle) * d;
 				hitPoint.y -= sin(l.angle) * d;
-				r.points.push_back(hitPoint);
+				float distance = distanceBetweenPoints(p, hitPoint);
+
+				if (distanceBetweenPoints(p, hitPoint) > 1e-6f &&
+					(get<0>(closest) == -1 ||
+					 distanceBetweenPoints(p, hitPoint) < get<2>(closest))) {
+					closest = {current, hitPoint,
+							   distanceBetweenPoints(p, hitPoint), d};
+				}
+			}
+
+			if (current == lens.size() - 1 && get<0>(closest) != -1) {
+				Lens& cl = lens[get<0>(closest)];  // Closest lens
+				r.points.push_back(get<1>(closest));
 				// Angle calculation process from:
 				// https://physics.stackexchange.com/questions/690925/what-is-the-angle-of-a-ray-passing-through-a-thin-lens
-				if (l.type == Lens::Type::biconvex)
-					r._angle = atan(tan(M_PI / 2 - l.angle + r._angle) +
-									(d / l.principalFocus)) +
+				if (cl.type == Lens::Type::biconvex)
+					r._angle = atan(tan((-M_PI / 2) - cl.angle + r._angle) +
+									(get<3>(closest) / cl.principalFocus)) +
 							   r._angle;
-				if (l.type == Lens::Type::biconcave) {
-				}  // TODO: Add calculating angle of ray crossing biconcave lens
+				if (cl.type == Lens::Type::biconcave) {
+					r._angle = -atan(tan((-M_PI / 2) - cl.angle + r._angle) +
+									 (get<3>(closest) / cl.principalFocus)) +
+							   r._angle;
+				}
+				closest = {-1, {0, 0}, 0, 0};
+				current = -1;
 			}
 		}
 		ImVec2 re = r.points.back();
@@ -155,16 +153,33 @@ void Optics::draw() {
 		r.points = {copy};
 	}
 
+	// Menu
+	if (ImGui::BeginMenuBar()) {
+		if (ImGui::BeginMenu(tr("Options").c_str())) {
+			ImGui::SliderInt(tr("Rays count").c_str(), (int*)&raysCount, 0, 50);
+			ImGui::DragFloat(tr("Rays gap").c_str(), &raysGap, 6e-2f, 1e-3f,
+							 100.0f, "%.3f m", ImGuiSliderFlags_Logarithmic);
+			ImGui::DragFloat(tr("Scale").c_str(), &scale, 100.0f, 10.0f,
+							 1000000.0f, "%.2f px = 1 m",
+							 ImGuiSliderFlags_Logarithmic);
+
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+
 	// TODO: Use DRY roule for next three code sections
 
 	// Modify lens
 	static Lens* onModify = NULL;
+	static int modifySelectedType = -1;
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		if (onModify == NULL) {
 			for (auto& l : lens) {
 				float distance = distanceBetweenPoints(l.position, mousePos);
 				if (distance * scale < 30) {
 					onModify = &l;
+					modifySelectedType = -1;
 					ImGui::OpenPopup("ModifyObject");
 				}
 			}
@@ -173,6 +188,7 @@ void Optics::draw() {
 			lens.push_back(Lens{});
 			onModify = &(lens.back());
 			onModify->position = mousePos;
+			modifySelectedType = -1;
 			ImGui::OpenPopup("ModifyObject");
 		}
 	}
@@ -194,11 +210,11 @@ void Optics::draw() {
 		const char* Biconvex = tr("Biconvex").c_str();
 		const char* Biconcave = tr("Biconcave").c_str();
 		const char* types[] = {Biconvex, Biconcave};
-		static int selected = -1;
-		ImGui::ListBox("##Types", &selected, types, IM_ARRAYSIZE(types));
-		if (selected != -1) {
-			if (selected == 0) onModify->type = Lens::Type::biconvex;
-			if (selected == 1) onModify->type = Lens::Type::biconcave;
+		ImGui::ListBox("##Types", &modifySelectedType, types,
+					   IM_ARRAYSIZE(types));
+		if (modifySelectedType != -1) {
+			if (modifySelectedType == 0) onModify->type = Lens::Type::biconvex;
+			if (modifySelectedType == 1) onModify->type = Lens::Type::biconcave;
 		}
 
 		if (ImGui::Button(tr("Remove").c_str())) {
@@ -221,7 +237,7 @@ void Optics::draw() {
 			float distance = distanceBetweenPoints(l.position, mousePos);
 			if (distance * scale < 30) {
 				l.angle += (float)M_PI / 64 * IO.MouseWheel;
-				l.angle = fmodf(l.angle, M_PI);
+				l.angle = fmodf(l.angle + 2 * M_PI, M_PI);
 			}
 		}
 	}

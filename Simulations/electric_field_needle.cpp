@@ -89,7 +89,7 @@ void ElectricField::drawElectroMagneticNeedles() {
 			editObject = &objects.back();
 		}
 		ImGui::SetWindowSize({300, 120});
-		ImGui::Text((tr("Charge") + ":").c_str());
+		ImGui::Text("%s:", tr("Charge").c_str());
 		ImGui::InputFloat("", &(editObject->charge), 1e-1f, 1.0f, "%.3e C");
 		if (ImGui::Button(tr("Remove").c_str())) {
 			auto iter = std::find(objects.begin(), objects.end(), *editObject);

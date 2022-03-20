@@ -13,7 +13,6 @@ msgstr ""
 msgid "Dynamic Laws"
 msgstr ""
 
-
 msgid "Options"
 msgstr ""
 
@@ -216,4 +215,10 @@ msgid "Biconvex"
 msgstr ""
 
 msgid "Biconcave"
+msgstr ""
+
+msgid "Rays count"
+msgstr ""
+
+msgid "Rays gap"
 msgstr ""
