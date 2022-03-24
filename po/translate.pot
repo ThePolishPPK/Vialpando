@@ -148,6 +148,12 @@ msgstr ""
 msgid "Work and energy"
 msgstr ""
 
+msgid "Potential energy"
+msgstr ""
+
+msgid "Kinetic energy"
+msgstr ""
+
 msgid "Displacement"
 msgstr ""
 

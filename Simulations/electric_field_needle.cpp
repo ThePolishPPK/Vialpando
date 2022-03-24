@@ -10,8 +10,8 @@
 
 void ElectricField::drawElectroMagneticNeedles() {
 	static std::vector<object> objects = {
-		object{{0.2f, 0.3f}, {0, 0}, 0, 0, 1.6f},
-		object{{0.8f, 0.3f}, {0, 0}, 0, 0, -1.6f}};
+		object{{0.2f, 0.3f}, {0, 0}, 0, 0, 1.6e-3f},
+		object{{0.8f, 0.3f}, {0, 0}, 0, 0, -1.6e-3f}};
 	static float densityOfNeedles = 20.0f;	// Define net of needles length
 	static float scale = 1000.0f;			// 1m = {scale} pixels
 	static float objectSize = 0.05f;		// Size of object in meters
@@ -35,21 +35,33 @@ void ElectricField::drawElectroMagneticNeedles() {
 	mousePtr.y /= scale;
 
 	// Draw Needles
+	static float maxCharge = fabs(objects[0].charge);
+	float masterColorForce =
+		(this->k / std::pow(objectSize * 1.5, 2)) * maxCharge;
 	ImVec2 loc = ImVec2(0, 0);
 	for (; loc.x < windowSize.x; loc.x += 1 / densityOfNeedles) {
 		loc.y = 0;
 		for (; loc.y < windowSize.y; loc.y += 1 / densityOfNeedles) {
 			std::vector<Force> forces = this->calcNeedleForces(loc, objects);
 			Force data = resultantOfForces(forces);
-			drawNeedle(ImVec2(windowPos.x + loc.x * scale,
-							  windowPos.y + loc.y * scale),
-					   draw, arrowLength, data.angle / M_PI * 180,
-					   ImColor(128, 255, 127));
+			float colorScale = sqrt(sqrt(sqrt(data.power / masterColorForce)));
+			if (colorScale > 1.0f) colorScale = 1.0f;
+			drawNeedle(
+				ImVec2(windowPos.x + loc.x * scale,
+					   windowPos.y + loc.y * scale),
+				draw, arrowLength, data.angle / M_PI * 180,
+				ImColor((int)(128.0f * colorScale), (int)(255.0f * colorScale),
+						(int)(127.0f * colorScale)));
 		}
 		if (draw->IdxBuffer.size() > std::pow(2, 16) * 0.90) {
 			densityOfNeedles *= 0.90;
 		}
 	}
+
+	// Find maximum object charge
+	maxCharge = 0.0f;
+	for (auto& obj : objects)
+		if (fabs(obj.charge) > maxCharge) maxCharge = fabs(obj.charge);
 
 	// Draw objects
 	for (auto& obj : objects) {
@@ -63,15 +75,14 @@ void ElectricField::drawElectroMagneticNeedles() {
 	}
 
 	// Move objects
-	if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-		if (lastMoved == NULL) {
-			for (auto& obj : objects) {
-				if (distanceBetweenPoints(obj.position, mousePtr) <=
-					objectSize) {
-					lastMoved = &obj;
-				}
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && lastMoved == NULL) {
+		for (auto& obj : objects) {
+			if (distanceBetweenPoints(obj.position, mousePtr) <= objectSize) {
+				lastMoved = &obj;
 			}
 		}
+	}
+	if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
 		if (lastMoved != NULL) {
 			lastMoved->position.x += io.MouseDelta.x / scale;
 			lastMoved->position.y += io.MouseDelta.y / scale;
@@ -90,7 +101,8 @@ void ElectricField::drawElectroMagneticNeedles() {
 		}
 		ImGui::SetWindowSize({300, 120});
 		ImGui::Text("%s:", tr("Charge").c_str());
-		ImGui::InputFloat("", &(editObject->charge), 1e-1f, 1.0f, "%.3e C");
+		ImGui::DragFloat("", &(editObject->charge), 4e-6f, -4.0f, 4.0f,
+						 "%.6f C", ImGuiSliderFlags_AlwaysClamp);
 		if (ImGui::Button(tr("Remove").c_str())) {
 			auto iter = std::find(objects.begin(), objects.end(), *editObject);
 			objects.erase(iter);
@@ -117,13 +129,16 @@ void ElectricField::drawElectroMagneticNeedles() {
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu(tr("Options").c_str())) {
 			ImGui::DragFloat(tr("Density of needles").c_str(),
-							 &densityOfNeedles, 0.1f, 1.0f, scale / 5);
+							 &densityOfNeedles, 0.1f, 1.0f, 60.0f, "%.1f 1/m",
+							 ImGuiSliderFlags_AlwaysClamp);
 			ImGui::DragFloat(tr("Scale").c_str(), &scale, 1.0f, 10.0f,
-							 1000000.0f);
+							 1000000.0f, "%.0f m/px",
+							 ImGuiSliderFlags_AlwaysClamp);
 			ImGui::DragFloat(tr("Object size").c_str(), &objectSize, 0.01f,
-							 0.04f, 5.0f);
+							 0.04f, 5.0f, "%.2f m",
+							 ImGuiSliderFlags_AlwaysClamp);
 			ImGui::DragInt(tr("Arrow size").c_str(), &arrowLength, 1, 3, 100,
-						   "%d px");
+						   "%d px", ImGuiSliderFlags_AlwaysClamp);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
@@ -144,7 +159,7 @@ std::vector<Force> ElectricField::calcNeedleForces(
 			angleBetweenPoints(location, obj.position));
 		if (obj.charge == 0) {
 			objForce.angle = 0;
-		}  // Probally useless feture
+		}  // Probablly useless feture
 		forces.push_back(objForce);
 	}
 	return forces;

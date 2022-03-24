@@ -148,6 +148,12 @@ msgstr "Prędkość działa"
 msgid "Work and energy"
 msgstr "Praca i energia"
 
+msgid "Potential energy"
+msgstr "Energia potencjalna"
+
+msgid "Kinetic energy"
+msgstr "Energia kinetyczna"
+
 msgid "Displacement"
 msgstr "Przemieszczenie"
 

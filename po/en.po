@@ -148,6 +148,12 @@ msgstr "Cannon speed"
 msgid "Work and energy"
 msgstr "Work and energy"
 
+msgid "Potential energy"
+msgstr "Potential energy"
+
+msgid "Kinetic energy"
+msgstr "Kinetic energy"
+
 msgid "Displacement"
 msgstr "Displacement"
 

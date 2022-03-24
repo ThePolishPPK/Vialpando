@@ -156,12 +156,16 @@ void Optics::draw() {
 	// Menu
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu(tr("Options").c_str())) {
-			ImGui::SliderInt(tr("Rays count").c_str(), (int*)&raysCount, 0, 50);
-			ImGui::DragFloat(tr("Rays gap").c_str(), &raysGap, 6e-2f, 1e-3f,
-							 100.0f, "%.3f m", ImGuiSliderFlags_Logarithmic);
-			ImGui::DragFloat(tr("Scale").c_str(), &scale, 100.0f, 10.0f,
-							 1000000.0f, "%.2f px = 1 m",
-							 ImGuiSliderFlags_Logarithmic);
+			ImGui::SliderInt(tr("Rays count").c_str(), (int*)&raysCount, 0, 50,
+							 "%i", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat(
+				tr("Rays gap").c_str(), &raysGap, 6e-2f, 1e-3f, 100.0f,
+				"%.3f m",
+				ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat(
+				tr("Scale").c_str(), &scale, 100.0f, 10.0f, 1000000.0f,
+				"%.2f px = 1 m",
+				ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
 
 			ImGui::EndMenu();
 		}
@@ -197,14 +201,16 @@ void Optics::draw() {
 			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
 		ImGui::SetWindowSize({200, 0});
 		ImGui::Text("%s", tr("Height").c_str());
-		ImGui::DragFloat("##Height", &(onModify->height), 5e-4f, 1e-3f,
-						 onModify->principalFocus * 2, "%.3f m",
-						 ImGuiSliderFlags_Logarithmic);
+		ImGui::DragFloat(
+			"##Height", &(onModify->height), 5e-4f, 1e-3f,
+			onModify->principalFocus * 2, "%.3f m",
+			ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
 
 		ImGui::Text("%s", tr("Principal focus").c_str());
-		ImGui::DragFloat("##PrincipalFocus", &(onModify->principalFocus), 4e-3f,
-						 onModify->height / 2, 5.0f, "%.3f m",
-						 ImGuiSliderFlags_Logarithmic);
+		ImGui::DragFloat(
+			"##PrincipalFocus", &(onModify->principalFocus), 4e-3f,
+			onModify->height / 2, 5.0f, "%.3f m",
+			ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
 
 		ImGui::Text("%s", tr("Type").c_str());
 		const char* Biconvex = tr("Biconvex").c_str();

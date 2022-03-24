@@ -61,12 +61,12 @@ void Dynamics::draw() {
 						 90.0f, "%.1f°", ImGuiSliderFlags_AlwaysClamp);
 		ImGui::SetNextItemWidth(128);
 		ImGui::DragFloat(tr("Friction ratio").c_str(), &this->i.frictionRatio,
-						 0.004f, 0.0f, 100.0f, "%.2f",
+						 0.01f, 0.0f, 100.0f, "%.2f",
 						 ImGuiSliderFlags_AlwaysClamp);
 		ImGui::SetNextItemWidth(128);
 		ImGui::DragFloat(
 			tr("Distance").c_str(), &this->i.distance, 0.5f, 0.001f,
-			std::pow(2, 12), "%.2f m",
+			std::pow(2, 12), "%.3f m",
 			ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
 		if (ImGui::Button(tr("Move up").c_str())) {
 			this->i.position = 1.0f;
@@ -125,17 +125,19 @@ void Dynamics::draw() {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu(tr("Options").c_str())) {
 				ImGui::DragFloat(tr("Cannon mass").c_str(), &this->c.mass, 1, 1,
-								 2048, "%.0f kg");
+								 2048, "%.0f kg", ImGuiSliderFlags_AlwaysClamp);
 				ImGui::DragFloat(tr("Bullet mass").c_str(),
 								 &this->c.currentBulletMass, 0.1, 0.1, 2048,
-								 "%.1f kg");
+								 "%.1f kg", ImGuiSliderFlags_AlwaysClamp);
 				ImGui::DragFloat(tr("Bullet speed").c_str(),
-								 &this->c.currentBulletSpeed, 0.1, 0.1, 2048,
-								 "%.1f m/s");
+								 &this->c.currentBulletSpeed, 0.1, 0.1, 4096,
+								 "%.1f m/s", ImGuiSliderFlags_AlwaysClamp);
 				ImGui::DragFloat(tr("Bullet radius").c_str(),
-								 &this->c.bulletSize, 0.01, 0.01, 64, "%.2f m");
+								 &this->c.bulletSize, 0.01, 0.01, 32, "%.2f m",
+								 ImGuiSliderFlags_AlwaysClamp);
 				ImGui::DragFloat(tr("Window scale").c_str(), &this->c.boxScale,
-								 0.1, 0.1, 1024, "%.1fpx = 1m");
+								 0.1, 0.1, 1024, "%.1fpx = 1m",
+								 ImGuiSliderFlags_AlwaysClamp);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();

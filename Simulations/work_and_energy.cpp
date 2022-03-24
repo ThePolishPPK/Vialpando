@@ -87,7 +87,7 @@ void WorkAndEnergy::draw() {
 		acceleration = -this->dx * std::pow(frequency, 2) *
 					   sin(frequency * timeCycleDelta);
 		force = acceleration * this->pkg.mass;
-		speed = this->dx * frequency * sin(frequency * timeCycleDelta);
+		speed = this->dx * frequency * cos(frequency * timeCycleDelta);
 	}
 
 	// Update plot data
@@ -109,16 +109,20 @@ void WorkAndEnergy::draw() {
 	ImGui::SetCursorPos(ImVec2(0, 120 + this->coilLength * this->scale));
 
 	ImGui::Text("%s:", tr("Displacement").c_str());
-	ImGui::PlotLines("", &plotDisplacement[0], 256, 0, NULL, this->maxDX,
-					 -this->maxDX, ImVec2(0, 200));
+	ImGui::PlotLines("", &plotDisplacement[0], 256, 0, NULL, this->dx,
+					 -this->dx, ImVec2(0, 200));
 
 	int cursorY = ImGui::GetCursorPosY(), cursorX = 350;
 
 	// Info elements
-	ImGui::Text("%s:\t%f m/s\n%s:\t%f m/s²\n%s:\t%f N\n%s:\t%f m\n",
-				tr("Speed").c_str(), speed, tr("Acceleration").c_str(),
-				acceleration, tr("Force").c_str(), force,
-				tr("Displacement").c_str(), this->position);
+	ImGui::Text(
+		"%s:\t%f m/s\n%s:\t%f m/s²\n%s:\t%f N\n%s:\t%f m\n%s:\t%f J\n%s:\t%f "
+		"J\n",
+		tr("Speed").c_str(), speed, tr("Acceleration").c_str(), acceleration,
+		tr("Force").c_str(), force, tr("Displacement").c_str(), this->position,
+		tr("Potential energy").c_str(),
+		this->k * std::pow(this->position, 2) / 2, tr("Kinetic energy").c_str(),
+		this->pkg.mass * std::pow(speed, 2) / 2);
 
 	// Settings widgets
 	ImGui::SetCursorPos(ImVec2(350, cursorY));
@@ -128,26 +132,27 @@ void WorkAndEnergy::draw() {
 	ImGui::SetCursorPosX(cursorX);
 	ImGui::SetNextItemWidth(100);
 	ImGui::DragFloat(
-		tr("Coils length").c_str(), &this->coilLength, 0.01, 0.001, 256,
+		tr("Coils length").c_str(), &this->coilLength, 0.01f, 0.001f, 1.0f,
 		"%.3f m", ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
 
 	ImGui::SetCursorPosX(cursorX);
 	ImGui::SetNextItemWidth(100);
 	ImGui::DragFloat(
-		tr("Mass").c_str(), &this->pkg.mass, 0.1, 0.01, 256, "%.2f kg",
+		tr("Mass").c_str(), &this->pkg.mass, 0.1f, 0.01f, 256.0f, "%.2f kg",
 		ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
 
 	ImGui::SetCursorPosX(cursorX);
 	ImGui::SetNextItemWidth(100);
 	ImGui::DragFloat(
-		tr("Zero point").c_str(), &this->baseLength, 0.1, 0.01, 256, "%.2f m",
+		tr("Zero point").c_str(), &this->baseLength, 0.1f, 0.01f,
+		this->coilsCount * this->coilLength, "%.2f m",
 		ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
 
 	ImGui::SetCursorPosX(cursorX);
 	ImGui::SetNextItemWidth(100);
 	ImGui::DragFloat(
-		tr("Elasticity coefficient").c_str(), &this->k, 0.1, 0.01, 8, "%.3f",
-		ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
+		tr("Elasticity coefficient").c_str(), &this->k, 0.1f, 0.01f, 16.0f,
+		"%.3f", ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
 
 	// Catch block escape from system
 	if (this->position > this->maxDXRight) {
