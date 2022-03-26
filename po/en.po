@@ -228,3 +228,6 @@ msgstr "Rays count"
 
 msgid "Rays gap"
 msgstr "Rays gap"
+
+msgid "Save"
+msgstr "Save"

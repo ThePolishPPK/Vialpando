@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <stdio.h>
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -13,6 +14,8 @@
 #define GRAVITY_G 6.67430e-11
 #define EARTH_MASS 5.97219e24
 #define EARTH_RADIUS 6371008
+#define LIGHT_SPEED 299792458
+#define ENVIROMENT_SIZE 8e8
 
 // FIXME: If objects goes on center other, then is infinite accelerated out
 // TODO: Improve zoom. Zoom into (0,0) but not in cursor position or window
@@ -45,33 +48,46 @@ void Gravity::draw() {
 
 	ImGui::Begin(this->name, &this->keepActive, ImGuiWindowFlags_MenuBar);
 
-	if (ImGui::BeginMenuBar()) {
-		if (ImGui::BeginMenu(tr("Options").c_str(), true)) {
-			ImGui::DragFloat(tr("Scale").c_str(), &this->scale, 16, 0,
-							 std::pow(2, 18), "%.7f",
-							 ImGuiSliderFlags_Logarithmic);
-			ImGui::DragFloat(tr("Time speed").c_str(), &this->timeSpeed,
-							 std::pow(2, 14), 0, std::pow(2, 24), "%.2f",
-							 ImGuiSliderFlags_Logarithmic);
+	// Constants
+	const static float maxScale = 1 << 18, minScale = 0.05f;
 
+	// Create menubar
+	if (ImGui::BeginMenuBar()) {
+		// Menu for full enviroment
+		if (ImGui::BeginMenu(tr("Options").c_str(), true)) {
+			ImGui::DragFloat(
+				tr("Scale").c_str(), &this->scale, 128, minScale, maxScale,
+				"%.2f m/px",
+				ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat(
+				tr("Time speed").c_str(), &this->timeSpeed, 5, 0, 1 << 13,
+				"%.2f sim(s)/s",
+				ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp);
+
+			// Force vectors configuration
 			ImGui::Checkbox(tr("Force vectors").c_str(),
 							&this->drawForceVectors);
 			ImGui::SameLine(ImGui::CalcItemWidth());
 			if (ImGui::BeginMenu(tr("Vector options").c_str())) {
-				ImGui::DragFloat(tr("Scale").c_str(), &this->forceScale, 1, 0,
-								 std::pow(2, 10), "%.7f",
-								 ImGuiSliderFlags_Logarithmic);
+				ImGui::DragFloat(tr("Scale").c_str(), &this->forceScale, 1,
+								 1e-3, 1 << 10, "%.5f N/px",
+								 ImGuiSliderFlags_Logarithmic |
+									 ImGuiSliderFlags_AlwaysClamp);
 				ImGui::DragFloat(tr("Line width").c_str(),
-								 &this->vectorThickness, 0.02, 0, 32, "%.0f");
+								 &this->vectorThickness, 0.02, 0, 16, "%.0f px",
+								 ImGuiSliderFlags_AlwaysClamp);
 				ImGui::DragFloat(tr("Angle between arrow").c_str(),
-								 &this->arrowAngle, 0.08, 0, 180, "%.2f");
+								 &this->arrowAngle, 0.08, 0, 180, "%.2f°",
+								 ImGuiSliderFlags_AlwaysClamp);
 				ImGui::DragFloat(tr("Arrow length").c_str(), &this->arrowLength,
-								 0.08, 0, 128, "%.2f");
+								 0.08, 0, 128, "%.0f px",
+								 ImGuiSliderFlags_AlwaysClamp);
 				ImGui::ColorEdit3(tr("Color").c_str(),
 								  (float*)&this->forceColor);
 				ImGui::EndMenu();
 			}
 
+			// Axes configuration
 			ImGui::Checkbox(tr("Axes").c_str(), &this->drawAxes);
 			ImGui::SameLine(ImGui::CalcItemWidth());
 			if (ImGui::BeginMenu(tr("Axis options").c_str())) {
@@ -83,11 +99,14 @@ void Gravity::draw() {
 			}
 			ImGui::EndMenu();
 		}
+
+		// Menu to edit each of objects
 		if (ImGui::BeginMenu(tr("Objects").c_str(), true)) {
 			unsigned char number = 1;
 			const static double posMin = std::numeric_limits<double>::lowest(),
 								posMax = std::numeric_limits<double>::max();
 
+			// Loop making submenu for each of object
 			for (auto& object : this->objects) {
 				std::string name(tr("Object") + " " + std::to_string(number));
 				if (ImGui::BeginMenu(name.c_str())) {
@@ -96,44 +115,25 @@ void Gravity::draw() {
 											object.move.speedY);
 					ImGui::ColorEdit3(tr("Color").c_str(),
 									  (float*)&object.color);
-					ImGui::DragScalar(
-						(tr("Position") + " X").c_str(), ImGuiDataType_Double,
-						&object.position.x,
-						std::abs(object.position.x) / Gravity::sensitivity +
-							0.01f,
-						&posMin, &posMax, "%e m", ImGuiSliderFlags_None);
-					ImGui::DragScalar(
-						(tr("Position") + " Y").c_str(), ImGuiDataType_Double,
-						&object.position.y,
-						std::abs(object.position.y) / Gravity::sensitivity +
-							0.01f,
-						&posMin, &posMax, "%e m", ImGuiSliderFlags_None);
-
 					ImGui::EndMenu();
 				}
 				number++;
 			}
+
 			if (ImGui::Button(tr("Add new object").c_str())) {
 				ImGui::OpenPopup(tr("New object").c_str());
 			}
+
+			// Menu for new object
 			if (ImGui::BeginPopupModal(tr("New object").c_str(), NULL,
 									   ImGuiWindowFlags_NoMove)) {
-				static float radius = 1.0f, speedX = 0.0f, speedY = 0.0f;
-				static double mass = 1.0, x = 0.0, y = 0.0;
-				static double min = std::numeric_limits<double>::lowest();
-				static double max = std::numeric_limits<double>::max();
+				static float radius = 1.0f, speedX = 0.0f, speedY = 0.0f,
+							 mass = 1.0f;
+				static double x = 0.0, y = 0.0;
 				static ImColor color = ImColor(255, 0, 0);
 
 				Gravity::editObjectMenu(mass, radius, speedX, speedY);
 				ImGui::ColorEdit3(tr("Color").c_str(), (float*)&color);
-				ImGui::DragScalar((tr("Position") + " X").c_str(),
-								  ImGuiDataType_Double, &x,
-								  std::abs(x) / Gravity::sensitivity + 0.01f,
-								  &min, &max, "%e m");
-				ImGui::DragScalar((tr("Position") + " Y").c_str(),
-								  ImGuiDataType_Double, &y,
-								  std::abs(y) / Gravity::sensitivity + 0.01f,
-								  &min, &max, "%e m");
 
 				if (ImGui::Button(tr("Add").c_str())) {
 					Gravity::object obj;
@@ -164,42 +164,108 @@ void Gravity::draw() {
 		ImGui::EndMenuBar();
 	}
 
+	// Window info
 	list = ImGui::GetWindowDrawList();
 	ImVec2 p0 = ImGui::GetCursorScreenPos();
+	ImVec2 cursorPos = ImGui::GetMousePos();
+	ImVec2 windowPos = ImGui::GetWindowPos();
 	ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
+	// Mouse position normalize to frame of reference
+	cursorPos.x -= p0.x + this->viewX;
+	cursorPos.x *= this->scale;
+
+	cursorPos.y -= p0.y + this->viewY;
+	cursorPos.y *= this->scale;
+
+	// Click aera
 	ImGui::InvisibleButton("WindowContent",
 						   ImVec2((windowSize.x == 0) ? 1 : windowSize.x,
 								  (windowSize.y == 0) ? 1 : windowSize.y),
 						   ImGuiButtonFlags_MouseButtonLeft);
 
+	// Objects move by cursor
 	// TODO: Add touch support
+	static object* currentInMove = NULL;
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && currentInMove == NULL) {
+		for (auto& obj : objects) {
+			if (distanceBetweenPoints(obj.position, cursorPos) <= obj.radius) {
+				currentInMove = &obj;
+			}
+		}
+	}
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsItemFocused() &&
 		ImGui::IsItemActive()) {
 		ImVec2 delta = ImGui::GetIO().MouseDelta;
-		this->viewX += delta.x;
-		this->viewY += delta.y;
+		if (currentInMove == NULL) {
+			this->viewX += delta.x;
+			this->viewY += delta.y;
+		} else {
+			currentInMove->position.x += delta.x * this->scale;
+			currentInMove->position.y += delta.y * this->scale;
+		}
+	}
+	if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) currentInMove = NULL;
+
+	// Edit or add object by mouse
+	static object* currentEdited = NULL;
+	static bool newObjectIsAdded = false;
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) &&
+		currentEdited == NULL) {
+		for (auto& obj : objects) {
+			if (distanceBetweenPoints(obj.position, cursorPos) <= obj.radius) {
+				currentEdited = &obj;
+				newObjectIsAdded = false;
+			}
+		}
+		if (currentEdited == NULL) {
+			currentEdited = new object();
+			currentEdited->position = cursorPos;
+			newObjectIsAdded = true;
+		}
+		ImGui::OpenPopup("ModifyObject");
+	}
+	if (ImGui::BeginPopupModal(
+			"ModifyObject", NULL,
+			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
+		this->editObjectMenu(currentEdited->mass, currentEdited->radius,
+							 currentEdited->move.speedX,
+							 currentEdited->move.speedY);
+
+		if (ImGui::Button(tr("Remove").c_str())) {
+			auto iter = find(this->objects.begin(), this->objects.end(),
+							 *currentEdited);
+			this->objects.erase(iter);
+			currentEdited = NULL;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(tr("Save").c_str())) {
+			if (newObjectIsAdded) {
+				this->objects.push_back(*currentEdited);
+			}
+			currentEdited = NULL;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
 	}
 
+	// Screen zoom
 	if (ImGui::GetIO().MouseWheel != 0) {
 		this->scale *= 1 + (-ImGui::GetIO().MouseWheel / 5);
+		if (this->scale > maxScale) {
+			this->scale = maxScale;
+		} else if (this->scale < minScale)
+			this->scale = minScale;
 	}
 
+	// Drawing objects on screen
 	list->ChannelsSplit(2);
 
 	for (auto& obj : this->objects) {
-		ImVec2 lastDrawing(
-			obj.position.x * (1 / this->scale) + p0.x + this->viewX,
-			obj.position.y * (1 / this->scale) + p0.y + this->viewY);
-
-		if (obj.radius * (1 / this->scale) < 1 ||
-			this->scale < std::numeric_limits<float>::min())
-			break;
-		float radius = obj.radius * (1 / this->scale);
-
-		if (radius > 16384) {
-			radius = 16384;
-		}
+		ImVec2 lastDrawing(obj.position.x / this->scale + p0.x + this->viewX,
+						   obj.position.y / this->scale + p0.y + this->viewY);
+		float radius = obj.radius / this->scale;
 
 		list->ChannelsSetCurrent(0);
 
@@ -222,6 +288,26 @@ void Gravity::draw() {
 	}
 	list->ChannelsMerge();
 
+	// Check objects limitations
+	for (auto& obj : this->objects) {
+		// Speed check
+		float speed = sqrt(pow(obj.move.speedX, 2) + pow(obj.move.speedY, 2));
+		if (speed > LIGHT_SPEED) {
+			float speedProportion = LIGHT_SPEED / speed;
+			obj.move.speedX *= speedProportion;
+			obj.move.speedY *= speedProportion;
+		}
+
+		// Position
+		if (fabs(obj.position.x) > ENVIROMENT_SIZE / 2) {
+			obj.position.x = copysignf(ENVIROMENT_SIZE / 2, obj.position.x);
+		}
+		if (fabs(obj.position.y) > ENVIROMENT_SIZE / 2) {
+			obj.position.y = copysignf(ENVIROMENT_SIZE / 2, obj.position.y);
+		}
+	}
+
+	// Update position and speed of objects
 	if (ImGui::GetTime() - this->lastMoveTime < 1.0) {
 		double part =
 			(ImGui::GetTime() - this->lastMoveTime) / (1 / this->timeSpeed);
@@ -237,16 +323,17 @@ void Gravity::draw() {
 	}
 	this->lastMoveTime = ImGui::GetTime();
 
+	// Calculate forces between objects
 	for (auto& obj : this->objects) {
 		obj.forcesVector.clear();
 		for (auto& grav : this->objects) {
-			if (grav.position.x != obj.position.x ||
-				grav.position.y != obj.position.y || grav.mass != obj.mass) {
+			if (!(grav == obj)) {
 				obj.forcesVector.push_back(this->calcGravityForce(obj, grav));
 			}
 		}
 	}
 
+	// Draw axes
 	if (this->drawAxes) {
 		double step;
 		int length;
@@ -278,6 +365,7 @@ void Gravity::draw() {
 								  ? 5
 								  : -5 - ImGui::CalcTextSize("-0.0e+00m").x;
 
+		// Draw x axis labels
 		for (int x = -this->viewX / length - 1;
 			 x <= (-this->viewX + windowSize.x) / length + 2; x++) {
 			char label[12];
@@ -289,6 +377,7 @@ void Gravity::draw() {
 						  this->axesStepsColor, &label[0]);
 		}
 
+		// Draw y axis labels
 		for (int y = -this->viewY / length - 1;
 			 y <= (-this->viewY + windowSize.y) / length + 2; y++) {
 			if (y == 0) continue;
@@ -330,6 +419,13 @@ void Gravity::object::simplify() {
 	this->forcesVector.push_back(force);
 }
 
+bool Gravity::object::operator==(const object& obj) {
+	return (obj.position.x == this->position.x &&
+			obj.position.y == this->position.y && obj.radius == this->radius &&
+			obj.mass == this->mass && obj.move.speedX == this->move.speedX &&
+			obj.move.speedY == this->move.speedY);
+}
+
 Force Gravity::calcGravityForce(const Gravity::object& o1,
 								const Gravity::object& o2) {
 	Force force;
@@ -340,27 +436,23 @@ Force Gravity::calcGravityForce(const Gravity::object& o1,
 	return force;
 }
 
-void Gravity::editObjectMenu(double& mass, float& radius, float& speedX,
+void Gravity::editObjectMenu(float& mass, float& radius, float& speedX,
 							 float& speedY) {
 	// TODO: Incress accuranct
-	const static double min = 0.001, max = std::numeric_limits<double>::max();
-	ImGui::DragScalar(tr("Mass").c_str(), ImGuiDataType_Double, &mass,
-					  std::abs(mass) / Gravity::sensitivity + 0.01f, &min, &max,
-					  "%e kg");
-	ImGui::DragFloat(tr("Radius").c_str(), &radius,
-					 std::abs(radius) / Gravity::sensitivity + 0.01f, 0.0001f,
-					 std::numeric_limits<float>::max(), "% .4f m",
-					 ImGuiSliderFlags_NoRoundToFormat);
-	ImGui::DragFloat((tr("Speed") + " X").c_str(), &speedX,
-					 std::abs(speedX) / Gravity::sensitivity + 0.01f,
-					 std::numeric_limits<float>::lowest(),
-					 std::numeric_limits<float>::max(), "% .3f m/s",
-					 ImGuiSliderFlags_NoRoundToFormat);
-	ImGui::DragFloat((tr("Speed") + " Y").c_str(), &speedY,
-					 std::abs(speedY) / Gravity::sensitivity + 0.01f,
-					 std::numeric_limits<float>::lowest(),
-					 std::numeric_limits<float>::max(), "% .3f m/s",
-					 ImGuiSliderFlags_NoRoundToFormat);
+	ImGui::SliderFloat(
+		tr("Mass").c_str(), &mass, 0.001f, 1e30f, "%.4e kg",
+		ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+	ImGui::SliderFloat(
+		tr("Radius").c_str(), &radius, 0.001f, 1e7, "%.3f m",
+		ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+	ImGui::SliderFloat(
+		(tr("Speed") + " X").c_str(), &speedX, -LIGHT_SPEED, LIGHT_SPEED,
+		"%.5f m/s",
+		ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+	ImGui::SliderFloat(
+		(tr("Speed") + " Y").c_str(), &speedY, -LIGHT_SPEED, LIGHT_SPEED,
+		"%.5f m/s",
+		ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
 	ImGui::Text((tr("Total speed") + ": % .2f m/s").c_str(),
 				std::sqrt(std::pow(speedX, 2) + std::pow(speedY, 2)));
 }

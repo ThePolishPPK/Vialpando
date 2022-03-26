@@ -34,8 +34,8 @@ class Gravity : public View {
 	class object {
 	   public:
 		ImVec2 position;
-		float radius;
-		double mass;
+		float radius = 1;
+		float mass = 0.1;
 		ImColor color = ImColor(255, 0, 0);
 		struct {
 			float speedX = 0;  // In m/s
@@ -43,10 +43,11 @@ class Gravity : public View {
 		} move;
 		std::vector<Force> forcesVector;
 		void simplify();
+		bool operator==(const object& obj);
 	};
 	std::vector<object> objects;
 	Force calcGravityForce(const object& o1, const object& o2);
-	static void editObjectMenu(double& mass, float& radius, float& speedX,
+	static void editObjectMenu(float& mass, float& radius, float& speedX,
 							   float& speedY);
 };
 

@@ -228,3 +228,6 @@ msgstr "Ilość promieni"
 
 msgid "Rays gap"
 msgstr "Odstęp promieni"
+
+msgid "Save"
+msgstr "Zapisz"

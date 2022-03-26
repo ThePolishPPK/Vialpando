@@ -228,3 +228,6 @@ msgstr ""
 
 msgid "Rays gap"
 msgstr ""
+
+msgid "Save"
+msgstr ""
