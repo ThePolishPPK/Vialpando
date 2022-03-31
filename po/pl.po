@@ -231,3 +231,9 @@ msgstr "Odstęp promieni"
 
 msgid "Save"
 msgstr "Zapisz"
+
+msgid "Concave reflector"
+msgstr "Zwierciadło kuliste"
+
+msgid "Angle width"
+msgstr "Szerokość kątowa"

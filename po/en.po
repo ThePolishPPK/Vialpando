@@ -231,3 +231,9 @@ msgstr "Rays gap"
 
 msgid "Save"
 msgstr "Save"
+
+msgid "Concave reflector"
+msgstr "Concave reflector"
+
+msgid "Angle width"
+msgstr "Angle width"
