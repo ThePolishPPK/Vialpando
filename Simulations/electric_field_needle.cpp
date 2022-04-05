@@ -44,14 +44,14 @@ void ElectricField::drawElectroMagneticNeedles() {
 		for (; loc.y < windowSize.y; loc.y += 1 / densityOfNeedles) {
 			std::vector<Force> forces = this->calcNeedleForces(loc, objects);
 			Force data = resultantOfForces(forces);
-			float colorScale = sqrt(sqrt(sqrt(data.power / masterColorForce)));
+			float colorScale = sqrt(sqrt(data.power / masterColorForce));
 			if (colorScale > 1.0f) colorScale = 1.0f;
 			drawNeedle(
 				ImVec2(windowPos.x + loc.x * scale,
 					   windowPos.y + loc.y * scale),
 				draw, arrowLength, data.angle / M_PI * 180,
-				ImColor((int)(128.0f * colorScale), (int)(255.0f * colorScale),
-						(int)(127.0f * colorScale)));
+				ImColor::HSV(colorScale, 1.0f, sqrt(colorScale))
+			);
 		}
 		if (draw->IdxBuffer.size() > std::pow(2, 16) * 0.90) {
 			densityOfNeedles *= 0.90;

@@ -106,6 +106,7 @@ void Optics::draw() {
 	}
 
 	// Calculate Rays
+	unsigned long totalRayVertex = 0;
 	for (auto& r : rays) {
 		tuple<int8_t, ImVec2, float, float> closest = {-1, {0, 0}, 0, 0};
 		for (int8_t current = 0; current < lens.size(); current++) {
@@ -207,21 +208,24 @@ void Optics::draw() {
 									(get<3>(closest) / cl.principalFocus)) +
 							   r._angle;
 					r.points.push_back(get<1>(closest));
+					totalRayVertex++;
 				}
 				if (cl.type == Lens::Type::biconcave) {
 					r._angle = -atan(tan((-M_PI / 2) - cl.angle + r._angle) +
 									 (get<3>(closest) / cl.principalFocus)) +
 							   r._angle;
 					r.points.push_back(get<1>(closest));
+					totalRayVertex++;
 				}
 				if (cl.type == Lens::Type::concaveReflector) {
 					r._angle =
 						2 * angleBetweenPoints(cl.position, get<1>(closest)) +
 						M_PI - r._angle;
 					r.points.push_back(get<1>(closest));
+					totalRayVertex++;
 				}
 				closest = {-1, {0, 0}, 0, 0};
-				current = -1;
+				if (totalRayVertex < 1 << 13) current = -1;
 			}
 		}
 		ImVec2 re = r.points.back();
