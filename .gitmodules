@@ -1,0 +1,3 @@
+[submodule "tinygettext"]
+	path = tinygettext
+	url = https://github.com/tinygettext/tinygettext.git
