@@ -1,5 +1,9 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+
+#include <math.h>
+
 #include <mechanisms/angle.hpp>
 #include <type_traits>
 
@@ -100,18 +104,33 @@ class CoordinatesSystemPolar : public CoordinatesSystem2D<CoordinatesSystemPolar
 	void setRadius(const double &radius);
 };
 
-class CoordinatesSpherical : public CoordinatesSystem3D<CoordinatesSpherical> {
+class CoordinatesSystemSpherical : public CoordinatesSystem3D<CoordinatesSystemSpherical> {
    private:
 	double radius = 0.0;
-	double widthInRadians = 0.0;
-	double heightInRadians = 0.0;
+	AngleInRadians polarAngleInRadians = 0.0;
+	AngleInRadians azimuthalAngleInRadians = 0.0;
 
    public:
-	CoordinatesSpherical();
-	CoordinatesSpherical fromAngleWidthAndHeight(const AngleInRadians &angle, const double &width, const double &height);
+	CoordinatesSystemSpherical();
+	static CoordinatesSystemSpherical fromRadiusPolarAndAzimuthalAngle(const double &radius,
+																	   const AngleInRadians &polarAngleInRadians,
+																	   const AngleInRadians &azimuthalAngleInRadians);
+	static CoordinatesSystemSpherical fromRadiusPolarAndAzimuthalAngle(const double &radius,
+																	   const double &polarAngleInRadians,
+																	   const double &azimuthalAngleInRadians);
+	static CoordinatesSystemSpherical from3DCoordinates(const Coordinates3D &coordinates);
 
 	double getDistanceToPoint(const Coordinates3D &point) const;
 	Coordinates3D getCartesianCoordinates() const;
 
 	void setLocationFrom3DCoordinates(const Coordinates3D &coordinates);
+
+	double getRadius();
+	void setRadius(const double &radius);
+
+	AngleInRadians getPolarAngleInRadians();
+	void setPolarAngleInRadians(const AngleInRadians &angleInRadians);
+
+	AngleInRadians getAzimuthalAngleInRadians();
+	void setAzimuthalAngleInRadians(const AngleInRadians &angleInRadians);
 };

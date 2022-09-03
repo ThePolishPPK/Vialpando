@@ -14,23 +14,23 @@ TEST(CoordinatesSystemCartesian2DTest, constructor) {
 TEST(CoordinatesSystemCartesian2DTest, fromXY) {
 	CoordinatesSystemCartesian2D coordinatesSystem = CoordinatesSystemCartesian2D::fromXY(3.32, -32.75);
 
-	EXPECT_EQ(coordinatesSystem.getX(), 3.32);
-	EXPECT_EQ(coordinatesSystem.getY(), -32.75);
+	EXPECT_DOUBLE_EQ(coordinatesSystem.getX(), 3.32);
+	EXPECT_DOUBLE_EQ(coordinatesSystem.getY(), -32.75);
 }
 
 TEST(CoordinatesSystemCartesian2DTest, from2DCoordinates) {
 	CoordinatesSystemCartesian2D coordinatesSystem = CoordinatesSystemCartesian2D::from2DCoordinates({-46.23, -75432.44});
 
-	EXPECT_EQ(coordinatesSystem.getX(), -46.23);
-	EXPECT_EQ(coordinatesSystem.getY(), -75432.44);
+	EXPECT_DOUBLE_EQ(coordinatesSystem.getX(), -46.23);
+	EXPECT_DOUBLE_EQ(coordinatesSystem.getY(), -75432.44);
 }
 
 TEST(CoordinatesSystemCartesian2DTest, getDistanceToPoint) {
 	Coordinates2D pointOne = {0.0, 0.0}, pointTwo = {53.2, 43.33}, pointThree = {6.4, 5.4}, pointFour = {68.3, -88.0};
-	EXPECT_EQ(CoordinatesSystemCartesian2D::from2DCoordinates(pointOne).getDistanceToPoint(pointTwo), 68.6128916458124508);
-	EXPECT_EQ(CoordinatesSystemCartesian2D::from2DCoordinates(pointOne).getDistanceToPoint(pointFour), 111.395197383011086);
-	EXPECT_EQ(CoordinatesSystemCartesian2D::from2DCoordinates(pointTwo).getDistanceToPoint(pointFour), 132.195230246783110);
-	EXPECT_EQ(CoordinatesSystemCartesian2D::from2DCoordinates(pointThree).getDistanceToPoint(pointTwo), 60.2405585963476936);
+	EXPECT_DOUBLE_EQ(CoordinatesSystemCartesian2D::from2DCoordinates(pointOne).getDistanceToPoint(pointTwo), 68.6128916458124508);
+	EXPECT_DOUBLE_EQ(CoordinatesSystemCartesian2D::from2DCoordinates(pointOne).getDistanceToPoint(pointFour), 111.395197383011086);
+	EXPECT_DOUBLE_EQ(CoordinatesSystemCartesian2D::from2DCoordinates(pointTwo).getDistanceToPoint(pointFour), 132.195230246783110);
+	EXPECT_DOUBLE_EQ(CoordinatesSystemCartesian2D::from2DCoordinates(pointThree).getDistanceToPoint(pointTwo), 60.2405585963476936);
 }
 
 TEST(CoordinatesSystemCartesian2DTest, getCartesianCoordinates) {
@@ -64,25 +64,25 @@ TEST(CoordinatesSystemCartesian3DTest, constructor) {
 TEST(CoordinatesSystemCartesian3DTest, fromXYZ) {
 	CoordinatesSystemCartesian3D coordinatesSystem = CoordinatesSystemCartesian3D::fromXYZ(21.75, 23.93, 56.73);
 
-	EXPECT_EQ(coordinatesSystem.getX(), 21.75);
-	EXPECT_EQ(coordinatesSystem.getY(), 23.93);
-	EXPECT_EQ(coordinatesSystem.getZ(), 56.73);
+	EXPECT_DOUBLE_EQ(coordinatesSystem.getX(), 21.75);
+	EXPECT_DOUBLE_EQ(coordinatesSystem.getY(), 23.93);
+	EXPECT_DOUBLE_EQ(coordinatesSystem.getZ(), 56.73);
 }
 
 TEST(CoordinatesSystemCartesian3DTest, from3DCoordinates) {
 	CoordinatesSystemCartesian3D coordinatesSystem = CoordinatesSystemCartesian3D::from3DCoordinates({-6.59, 67.22, 2.78});
 
-	EXPECT_EQ(coordinatesSystem.getX(), -6.59);
-	EXPECT_EQ(coordinatesSystem.getY(), 67.22);
-	EXPECT_EQ(coordinatesSystem.getZ(), 2.78);
+	EXPECT_DOUBLE_EQ(coordinatesSystem.getX(), -6.59);
+	EXPECT_DOUBLE_EQ(coordinatesSystem.getY(), 67.22);
+	EXPECT_DOUBLE_EQ(coordinatesSystem.getZ(), 2.78);
 }
 
 TEST(CoordinatesSystemCartesian3DTest, getDistanceToPoint) {
 	Coordinates3D pointOne = {0.0, 0.0, 0.0}, pointTwo = {53.2, 43.33, 67.48}, pointThree = {6.4, 5.4, 1.98}, pointFour = {68.3, -88.0, 45.55};
-	EXPECT_EQ(CoordinatesSystemCartesian3D::from3DCoordinates(pointOne).getDistanceToPoint(pointTwo), 96.2355407321016719);
-	EXPECT_EQ(CoordinatesSystemCartesian3D::from3DCoordinates(pointOne).getDistanceToPoint(pointFour), 120.348213530571363);
-	EXPECT_EQ(CoordinatesSystemCartesian3D::from3DCoordinates(pointTwo).getDistanceToPoint(pointFour), 134.001879837560488);
-	EXPECT_EQ(CoordinatesSystemCartesian3D::from3DCoordinates(pointThree).getDistanceToPoint(pointTwo), 88.9897460385183929);
+	EXPECT_DOUBLE_EQ(CoordinatesSystemCartesian3D::from3DCoordinates(pointOne).getDistanceToPoint(pointTwo), 96.2355407321016719);
+	EXPECT_DOUBLE_EQ(CoordinatesSystemCartesian3D::from3DCoordinates(pointOne).getDistanceToPoint(pointFour), 120.348213530571363);
+	EXPECT_DOUBLE_EQ(CoordinatesSystemCartesian3D::from3DCoordinates(pointTwo).getDistanceToPoint(pointFour), 134.001879837560488);
+	EXPECT_DOUBLE_EQ(CoordinatesSystemCartesian3D::from3DCoordinates(pointThree).getDistanceToPoint(pointTwo), 88.9897460385183929);
 }
 
 TEST(CoordinatesSystemCartesian3DTest, getCartesianCoordinates) {
@@ -134,8 +134,8 @@ TEST(CoordinatesSystemPolarTest, getDistanceToPoint) {
 }
 
 TEST(CoordinatesSystemPolarTest, getCartesianCoordinates) {
-	CoordinatesSystemPolar coordinatesSystemOne = CoordinatesSystemPolar::fromAngleAndRadius(AngleInRadians(2.3 * M_PI), 3.21),
-						   coordinatesSystemTwo = CoordinatesSystemPolar::fromAngleAndRadius(AngleInRadians(1.63 * M_PI), 32.3);
+	CoordinatesSystemPolar coordinatesSystemOne = CoordinatesSystemPolar::fromAngleAndRadius(AngleInRadians(2.3 * M_PIl), 3.21),
+						   coordinatesSystemTwo = CoordinatesSystemPolar::fromAngleAndRadius(AngleInRadians(1.63 * M_PIl), 32.3);
 
 	Coordinates2D coordinatesOne = coordinatesSystemOne.getCartesianCoordinates(), coordinatesTwo = coordinatesSystemTwo.getCartesianCoordinates();
 
@@ -147,8 +147,8 @@ TEST(CoordinatesSystemPolarTest, getCartesianCoordinates) {
 }
 
 TEST(CoordinatesSystemPolarTest, convertPolarToCartesian) {
-	CoordinatesSystemPolar coordinatesSystemOne = CoordinatesSystemPolar::fromAngleAndRadius(AngleInRadians(2.21 * M_PI), 23.21),
-						   coordinatesSystemTwo = CoordinatesSystemPolar::fromAngleAndRadius(AngleInRadians(1.41 * M_PI), 8.23);
+	CoordinatesSystemPolar coordinatesSystemOne = CoordinatesSystemPolar::fromAngleAndRadius(AngleInRadians(2.21 * M_PIl), 23.21),
+						   coordinatesSystemTwo = CoordinatesSystemPolar::fromAngleAndRadius(AngleInRadians(1.41 * M_PIl), 8.23);
 
 	Coordinates2D coordinatesOne = CoordinatesSystemPolar::convertPolarToCartesian(coordinatesSystemOne),
 				  coordinatesTwo = CoordinatesSystemPolar::convertPolarToCartesian(coordinatesSystemTwo);
@@ -186,3 +186,76 @@ TEST(CoordinatesSystemPolarTest, setLocationFrom2DCoordinates) {
 	EXPECT_DOUBLE_EQ(coordinatesSystem.getRadius(), 74.6697060393303008);
 	EXPECT_DOUBLE_EQ(coordinatesSystem.getAngleInRadians().getNormalizedRawAngle(), 1.09307357666142394);
 }
+
+/**
+ * Coordinate System Spherical
+ */
+
+TEST(CoordinatesSystemSphericalTest, constructor) {
+	ASSERT_NO_THROW(CoordinatesSystemSpherical());
+}
+
+TEST(CoordinatesSystemSphericalTest, fromAngleWidthAndHeight) {
+	std::vector<std::tuple<double, double, double>> dataSet = {{55.33, 2.55 * M_PIl, 3.11 * M_PIl}, {0.322, 23.33, -2.3}, {74.2, 4.21, 3.11 * M_PIl}};
+
+	for (auto &data : dataSet) {
+		CoordinatesSystemSpherical coordinateSystem =
+			CoordinatesSystemSpherical::fromRadiusPolarAndAzimuthalAngle(std::get<0>(data), std::get<1>(data), std::get<2>(data));
+
+		EXPECT_DOUBLE_EQ(coordinateSystem.getRadius(), std::get<0>(data));
+		EXPECT_DOUBLE_EQ(coordinateSystem.getPolarAngleInRadians().getRawAngle(), std::get<1>(data));
+		EXPECT_DOUBLE_EQ(coordinateSystem.getAzimuthalAngleInRadians().getRawAngle(), std::get<2>(data));
+	}
+}
+
+TEST(CoordinatesSystemSphericalTest, getDistanceToPoint) {
+	// Form cartesian (4.12, 64.21, 3.33) to (6.66, 1.01, 6.77)
+	CoordinatesSystemSpherical systemOne = CoordinatesSystemSpherical::from3DCoordinates({4.12, 64.21, 3.33});
+	double distanceOne = systemOne.getDistanceToPoint({6.66, 1.01, -6.77});
+
+	ASSERT_FLOAT_EQ(64.052334852056720321849203452711, distanceOne);
+}
+
+TEST(CoordinatesSystemSphericalTest, getCartesianCoordinates) {
+	CoordinatesSystemSpherical coordinatesSystemOne = CoordinatesSystemSpherical::fromRadiusPolarAndAzimuthalAngle(3.12, 1.53 * M_PIl, 0.11 * M_PIl);
+	CoordinatesSystemSpherical coordinatesSystemTwo = CoordinatesSystemSpherical::fromRadiusPolarAndAzimuthalAngle(5.2, 2.11 * M_PIl, -0.543 * M_PIl);
+	CoordinatesSystemSpherical coordinatesSystemThree = CoordinatesSystemSpherical::fromRadiusPolarAndAzimuthalAngle(1.23, -1.23423 * M_PIl, -2.5754 * M_PIl);
+
+	Coordinates3D coordinatesOne = coordinatesSystemOne.getCartesianCoordinates(), coordinatesTwo = coordinatesSystemTwo.getCartesianCoordinates(),
+				  coordinatesThree = coordinatesSystemThree.getCartesianCoordinates();
+
+	EXPECT_FLOAT_EQ(coordinatesOne.x, -2.92251993320765501);
+	EXPECT_FLOAT_EQ(coordinatesOne.y, -1.05217191881868680);
+	EXPECT_FLOAT_EQ(coordinatesOne.z, 0.293617937553764674);
+
+	EXPECT_FLOAT_EQ(coordinatesTwo.x, -0.237226818738429873);
+	EXPECT_FLOAT_EQ(coordinatesTwo.y, -1.74538946775284906);
+	EXPECT_FLOAT_EQ(coordinatesTwo.z, 4.89257999856197246);
+
+	EXPECT_FLOAT_EQ(coordinatesThree.x, -0.193741686942954469);
+	EXPECT_FLOAT_EQ(coordinatesThree.y, -0.802547985860338416);
+	EXPECT_FLOAT_EQ(coordinatesThree.z, -0.911746066145619449);
+}
+
+TEST(CoordinatesSystemSphericalTest, setLocationFrom3DCoordinates) {
+	CoordinatesSystemSpherical systemOne, systemTwo, systemThree;
+
+	systemOne.setLocationFrom3DCoordinates({62.73, 49.33, 37.99});
+	systemTwo.setLocationFrom3DCoordinates({75.79, 42.67, -25.82});
+	systemThree.setLocationFrom3DCoordinates({43.14, -9.01, 23.12});
+
+	EXPECT_FLOAT_EQ(systemOne.getRadius(), 88.384059083072);
+	EXPECT_FLOAT_EQ(systemOne.getPolarAngleInRadians().getNormalizedRawAngle(), 1.1264933436046);
+	EXPECT_FLOAT_EQ(systemOne.getAzimuthalAngleInRadians().getNormalizedRawAngle(), 0.6663844817512);
+
+	EXPECT_FLOAT_EQ(systemTwo.getRadius(), 90.727754298230);
+	EXPECT_FLOAT_EQ(systemTwo.getPolarAngleInRadians().getNormalizedRawAngle(), 1.859372609933);
+	EXPECT_FLOAT_EQ(systemTwo.getAzimuthalAngleInRadians().getNormalizedRawAngle(), 0.512771505423);
+
+	EXPECT_FLOAT_EQ(systemThree.getRadius(), 49.767199037117);
+	EXPECT_FLOAT_EQ(systemThree.getPolarAngleInRadians().getNormalizedRawAngle(), 1.0876552474583);
+	EXPECT_FLOAT_EQ(systemThree.getAzimuthalAngleInRadians().getNormalizedRawAngle(), 6.077290107774216);
+}
+
+// QALCULATE RANDOM COORDINATE BETWEEN 100 AND 1: round(rand()×10^4)/10^2
+// SIGNED COORDINATE: round(rand()×10^4)/10^2 × if(rand() > 0.5, 1, −1)
